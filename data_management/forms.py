@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 
-from .models import Student
+from .models import Interest, InterestCategory, Student, StudentInterest
 
 User = get_user_model()
 
@@ -83,7 +83,7 @@ class StaffLoginForm(forms.Form):
 class StudentForm(forms.ModelForm):
     class Meta:
         model = Student
-        exclude = ['user']  # Remove the temporary exclusion of financial fields
+        exclude = ['user', 'interests']  # interests handled manually via StudentInterest
         widgets = {
             # Text inputs dengan styling konsisten
             'whatsapp_number': forms.TextInput(attrs={
@@ -107,18 +107,17 @@ class StudentForm(forms.ModelForm):
                 'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
 
             # Academic fields
-            'institution': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
-            'faculty': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
-            'major': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
+            'institution': forms.Select(attrs={'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
+            'institution_custom': forms.TextInput(attrs={'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
+            'faculty': forms.Select(attrs={'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
+            'faculty_custom': forms.TextInput(attrs={'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
+            'major': forms.Select(attrs={'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
+            'major_custom': forms.TextInput(attrs={'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
+            'membership_status': forms.Select(attrs={'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
             'degree_level': forms.Select(attrs={
                 'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
-            'semester_level': forms.NumberInput(attrs={
-                'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
-            'latest_grade': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
+            'semester_level': forms.Select(attrs={'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
+            'latest_grade': forms.Select(attrs={'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
 
             # Health Information
             'disease_history': forms.TextInput(attrs={
@@ -126,34 +125,22 @@ class StudentForm(forms.ModelForm):
             'disease_status': forms.Select(attrs={
                 'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
 
-            # Interests and Talents
-            'sport_interest': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
+            # Achievements (interest checkboxes handled manually in views/templates)
             'sport_achievement': forms.Textarea(attrs={
                 'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary',
                 'rows': 3}),
-            'art_interest': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
             'art_achievement': forms.Textarea(attrs={
                 'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary',
                 'rows': 3}),
-            'literacy_interest': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
             'literacy_achievement': forms.Textarea(attrs={
                 'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary',
                 'rows': 3}),
-            'science_interest': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
             'science_achievement': forms.Textarea(attrs={
                 'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary',
                 'rows': 3}),
-            'mtq_interest': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
             'mtq_achievement': forms.Textarea(attrs={
                 'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary',
                 'rows': 3}),
-            'media_interest': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
             'media_achievement': forms.Textarea(attrs={
                 'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary',
                 'rows': 3}),
@@ -172,11 +159,13 @@ class StudentForm(forms.ModelForm):
                 'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
             'arrival_date': forms.DateInput(attrs={'type': 'date',
                                                    'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
-            'school_origin': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
             'home_name': forms.TextInput(attrs={
                 'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
-            'home_location': forms.TextInput(attrs={
+            'home_location': forms.Select(attrs={
+                'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
+            'school_origin': forms.Select(attrs={
+                'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
+            'scholarship_source': forms.Select(attrs={
                 'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
             'level': forms.Select(attrs={
                 'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
@@ -193,12 +182,8 @@ class StudentForm(forms.ModelForm):
             # Financial fields
             'education_funding': forms.Select(attrs={
                 'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
-            'scholarship_source': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
-            'living_cost': forms.NumberInput(attrs={
-                'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
-            'monthly_income': forms.NumberInput(attrs={
-                'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
+            'living_cost': forms.Select(attrs={'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
+            'monthly_income': forms.Select(attrs={'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
         }
 
     def clean(self):
@@ -233,17 +218,19 @@ class StaffStudentForm(forms.ModelForm):
         model = Student
         fields = [
             'whatsapp_number', 'birth_place', 'birth_date', 'gender',
-            'marital_status', 'citizenship_status', 'region_origin', 'parents_name', 'parents_phone',
-            'institution', 'faculty', 'major', 'degree_level', 'semester_level', 'latest_grade',
+            'marital_status', 'membership_status', 'citizenship_status', 'region_origin',
+            'parents_name', 'parents_phone',
+            'institution', 'institution_custom', 'faculty', 'faculty_custom',
+            'major', 'major_custom', 'degree_level', 'semester_level', 'latest_grade',
             'passport_number', 'nik', 'lapdik_number', 'arrival_date', 'school_origin',
             'home_name', 'home_location', 'level',
             'disease_history', 'disease_status',
-            'sport_interest', 'sport_achievement', 'art_interest', 'art_achievement',
-            'literacy_interest', 'literacy_achievement', 'science_interest', 'science_achievement',
-            'mtq_interest', 'mtq_achievement', 'media_interest', 'media_achievement',
+            'sport_achievement', 'art_achievement',
+            'literacy_achievement', 'science_achievement',
+            'mtq_achievement', 'media_achievement',
             'organization_history', 'is_draft',
-            # Financial fields
-            'education_funding', 'scholarship_source', 'living_cost', 'monthly_income'
+            'education_funding', 'scholarship_source',
+            'living_cost', 'monthly_income',
         ]
         widgets = {
             # Text inputs dengan styling konsisten
@@ -259,38 +246,24 @@ class StaffStudentForm(forms.ModelForm):
                 'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
             'parents_phone': forms.TextInput(attrs={
                 'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
-            'institution': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
-            'faculty': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
-            'major': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
-            'latest_grade': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
+            'institution': forms.Select(attrs={'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
+            'institution_custom': forms.TextInput(attrs={'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
+            'faculty': forms.Select(attrs={'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
+            'faculty_custom': forms.TextInput(attrs={'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
+            'major': forms.Select(attrs={'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
+            'major_custom': forms.TextInput(attrs={'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
+            'membership_status': forms.Select(attrs={'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
+            'latest_grade': forms.Select(attrs={'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
             'passport_number': forms.TextInput(attrs={
                 'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
             'nik': forms.TextInput(attrs={
                 'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
             'lapdik_number': forms.TextInput(attrs={
                 'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
-            'school_origin': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
-            'home_name': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
-            'home_location': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
-            'sport_interest': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
-            'art_interest': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
-            'literacy_interest': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
-            'science_interest': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
-            'mtq_interest': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
-            'media_interest': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
+            'home_name': forms.TextInput(attrs={'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
+            'home_location': forms.Select(attrs={'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
+            'school_origin': forms.Select(attrs={'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
+            'scholarship_source': forms.Select(attrs={'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
 
             # Hidden fields
             'is_draft': forms.HiddenInput(),
@@ -301,9 +274,8 @@ class StaffStudentForm(forms.ModelForm):
             'arrival_date': forms.DateInput(attrs={'type': 'date',
                                                    'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
 
-            # Number fields
-            'semester_level': forms.NumberInput(attrs={
-                'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
+            # Select fields (was NumberInput)
+            'semester_level': forms.Select(attrs={'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
 
             # Select fields
             'gender': forms.Select(attrs={
@@ -342,12 +314,8 @@ class StaffStudentForm(forms.ModelForm):
             # Financial fields
             'education_funding': forms.Select(attrs={
                 'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
-            'scholarship_source': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
-            'living_cost': forms.NumberInput(attrs={
-                'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
-            'monthly_income': forms.NumberInput(attrs={
-                'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
+            'living_cost': forms.Select(attrs={'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
+            'monthly_income': forms.Select(attrs={'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
         }
 
 

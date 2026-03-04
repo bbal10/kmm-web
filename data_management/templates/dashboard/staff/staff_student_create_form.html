@@ -83,47 +83,52 @@
       <h2 class="text-lg font-semibold text-gray-800">Akademik</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
         {% for field_name in academic_fields %}
-          {% with f=form|get_field:field_name %}
-          <div {% if field_name == 'institution' %}x-data="universitySelect()"{% endif %}>
-            <label class="block text-gray-600 mb-1 text-xs font-medium">{{ f.label }}</label>
-
-            {% if field_name == 'institution' %}
-              <!-- Custom autocomplete for institution -->
-              <div class="relative">
-                <input
-                  type="text"
-                  name="{{ f.name }}"
-                  x-model="query"
-                  x-on:input="searchUniversities()"
-                  x-on:focus="show = !!filteredUniversities.length"
-                  x-on:blur="hideList()"
-                  placeholder="Ketik nama universitas..."
-                  class="mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm"
-                  autocomplete="off"
-                />
-
-                <!-- Dropdown list -->
-                <div
-                  x-show="show && filteredUniversities.length"
-                  x-transition
-                  class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto"
-                >
-                  <template x-for="uni in filteredUniversities" :key="uni">
-                    <div
-                      x-text="uni"
-                      x-on:click="selectUniversity(uni)"
-                      class="px-3 py-2 cursor-pointer hover:bg-blue-50 border-b border-gray-100 last:border-b-0 text-sm"
-                    ></div>
-                  </template>
-                </div>
+          {% if field_name == 'institution_custom' or field_name == 'faculty_custom' or field_name == 'major_custom' %}
+            {# Custom fields rendered inline with their parent #}
+          {% elif field_name == 'institution' or field_name == 'faculty' or field_name == 'major' %}
+            {% with f=form|get_field:field_name %}
+            <div x-data="{ showCustom: $el.querySelector('select').value === 'other' }">
+              <label class="block text-gray-600 mb-1 text-xs font-medium">{{ f.label }}</label>
+              <div x-on:change="showCustom = $event.target.value === 'other'">
+                {{ f }}
               </div>
-            {% else %}
+              {% if f.errors %}<p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>{% endif %}
+              {% if field_name == 'institution' %}
+                {% with cf=form|get_field:"institution_custom" %}
+                <div x-show="showCustom" x-cloak class="mt-2">
+                  <label class="block text-gray-600 mb-1 text-xs font-medium">{{ cf.label }} (Isi Sendiri)</label>
+                  {{ cf }}
+                  {% if cf.errors %}<p class="text-xs text-red-600 mt-1">{{ cf.errors.0 }}</p>{% endif %}
+                </div>
+                {% endwith %}
+              {% elif field_name == 'faculty' %}
+                {% with cf=form|get_field:"faculty_custom" %}
+                <div x-show="showCustom" x-cloak class="mt-2">
+                  <label class="block text-gray-600 mb-1 text-xs font-medium">{{ cf.label }} (Isi Sendiri)</label>
+                  {{ cf }}
+                  {% if cf.errors %}<p class="text-xs text-red-600 mt-1">{{ cf.errors.0 }}</p>{% endif %}
+                </div>
+                {% endwith %}
+              {% elif field_name == 'major' %}
+                {% with cf=form|get_field:"major_custom" %}
+                <div x-show="showCustom" x-cloak class="mt-2">
+                  <label class="block text-gray-600 mb-1 text-xs font-medium">{{ cf.label }} (Isi Sendiri)</label>
+                  {{ cf }}
+                  {% if cf.errors %}<p class="text-xs text-red-600 mt-1">{{ cf.errors.0 }}</p>{% endif %}
+                </div>
+                {% endwith %}
+              {% endif %}
+            </div>
+            {% endwith %}
+          {% else %}
+            {% with f=form|get_field:field_name %}
+            <div>
+              <label class="block text-gray-600 mb-1 text-xs font-medium">{{ f.label }}</label>
               {{ f }}
-            {% endif %}
-
-            {% if f.errors %}<p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>{% endif %}
-          </div>
-          {% endwith %}
+              {% if f.errors %}<p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>{% endif %}
+            </div>
+            {% endwith %}
+          {% endif %}
         {% endfor %}
       </div>
     </div>
@@ -195,6 +200,41 @@
       </div>
     </div>
 
+    <!-- Informasi Keuangan -->
+    <div class="space-y-4">
+      <h2 class="text-lg font-semibold text-gray-800">Informasi Keuangan</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        {% with f=form|get_field:"education_funding" %}
+        <div>
+          <label class="block text-gray-600 mb-1 text-xs font-medium">{{ f.label }}</label>
+          {{ f }}
+          {% if f.errors %}<p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>{% endif %}
+        </div>
+        {% endwith %}
+        {% with f=form|get_field:"scholarship_source" %}
+        <div>
+          <label class="block text-gray-600 mb-1 text-xs font-medium">{{ f.label }}</label>
+          {{ f }}
+          {% if f.errors %}<p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>{% endif %}
+        </div>
+        {% endwith %}
+        {% with f=form|get_field:"living_cost" %}
+        <div>
+          <label class="block text-gray-600 mb-1 text-xs font-medium">{{ f.label }}</label>
+          {{ f }}
+          {% if f.errors %}<p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>{% endif %}
+        </div>
+        {% endwith %}
+        {% with f=form|get_field:"monthly_income" %}
+        <div>
+          <label class="block text-gray-600 mb-1 text-xs font-medium">{{ f.label }}</label>
+          {{ f }}
+          {% if f.errors %}<p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>{% endif %}
+        </div>
+        {% endwith %}
+      </div>
+    </div>
+
     <div class="flex flex-wrap justify-end gap-3 pt-4 border-t">
       <button type="submit" name="action" value="save_draft" class="px-5 py-2.5 rounded bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium" x-bind:disabled="submitting">Simpan Draft</button>
       <button type="submit" name="action" value="save_back" class="px-5 py-2.5 rounded bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium" x-bind:disabled="submitting">Simpan & Kembali</button>
@@ -237,61 +277,6 @@ function kabupatenSelect() {
     init() {
       this.fetchKabupaten();
       this.query = '{{ form.region_origin.value|default_if_none:"" }}';
-    }
-  }
-}
-
-function universitySelect() {
-  return {
-    universityList: [],
-    filteredUniversities: [],
-    query: '',
-    show: false,
-    isLoading: false,
-    fetchUniversities() {
-      this.isLoading = true;
-      fetch('http://universities.hipolabs.com/search?country=Egypt')
-        .then(res => res.json())
-        .then(data => {
-          // Extract university names from the API response
-          this.universityList = (data || []).map(uni => uni.name);
-        })
-        .catch(error => {
-          console.error('Error fetching university data:', error);
-          // Fallback to static list if API fails
-          this.universityList = [
-            'Arab Academy for Science & Technology',
-            'Alexandria University',
-            'American University in Cairo',
-            'Cairo University',
-            'Al Azhar University',
-            'Ain Shams University',
-            'German University in Cairo',
-            'Helwan University',
-            'Mansoura University',
-            'Zagazig University'
-          ];
-        })
-        .finally(() => {
-          this.isLoading = false;
-        });
-    },
-    searchUniversities() {
-      if (!this.universityList.length) return;
-      const q = this.query.toLowerCase();
-      this.filteredUniversities = this.universityList.filter(uni => uni.toLowerCase().includes(q)).slice(0, 10);
-      this.show = !!this.filteredUniversities.length;
-    },
-    selectUniversity(uni) {
-      this.query = uni;
-      this.show = false;
-    },
-    hideList() {
-      setTimeout(() => { this.show = false; }, 100);
-    },
-    init() {
-      this.fetchUniversities();
-      this.query = '{{ form.institution.value|default_if_none:"" }}';
     }
   }
 }

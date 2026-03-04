@@ -22,3 +22,11 @@ def get_field(form, name):
         return form[name]
     except Exception:
         return None
+
+@register.filter(name="get_item")
+def get_item(mapping, key):
+    """Return mapping[key] or None — used to look up dict values in templates."""
+    try:
+        return mapping.get(key)
+    except (AttributeError, TypeError):
+        return None

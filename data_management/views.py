@@ -20,11 +20,56 @@ from django.utils.text import slugify
 from django.views.generic import DetailView, UpdateView, ListView, CreateView, DeleteView
 
 from .forms import UserRegistrationForm, UserLoginForm, StudentForm, StaffStudentForm, StaffStudentCreateForm
-from .models import Student
+from .models import Interest, InterestCategory, Student, StudentInterest
 from .utils.logging_utils import security_logger, audit_logger, get_user_info, log_user_action
 
 # Configure logger with proper naming convention
 logger = logging.getLogger(__name__)
+
+
+def _get_interest_categories_context():
+    """Return InterestCategory queryset with prefetched interests for template context."""
+    return InterestCategory.objects.prefetch_related('interests').all()
+
+
+def _get_interests_grouped(student):
+    """Return interests grouped by category for detail templates."""
+    categories = InterestCategory.objects.prefetch_related('interests').all()
+    selected = {
+        si.interest_id: si
+        for si in student.student_interests.select_related('interest__category').all()
+    }
+    result = []
+    for cat in categories:
+        items = [selected[i.pk] for i in cat.interests.all() if i.pk in selected]
+        if items:
+            result.append({'category': cat, 'items': items})
+    return result
+
+
+def _save_student_interests(student, post_data):
+    """Sync StudentInterest records from POST data.
+
+    Expected POST keys:
+      - interest_ids   : list of Interest PKs that are checked
+      - custom_interest_<pk> : custom text for 'Isi Sendiri' interests
+    """
+    checked_ids = set(map(int, post_data.getlist('interest_ids')))
+
+    # Remove unchecked
+    StudentInterest.objects.filter(student=student).exclude(interest_id__in=checked_ids).delete()
+
+    # Upsert checked
+    existing = {si.interest_id: si for si in StudentInterest.objects.filter(student=student)}
+    for interest_id in checked_ids:
+        custom = post_data.get(f'custom_interest_{interest_id}', '').strip()
+        if interest_id in existing:
+            si = existing[interest_id]
+            if si.custom_value != custom:
+                si.custom_value = custom
+                si.save(update_fields=['custom_value'])
+        else:
+            StudentInterest.objects.create(student=student, interest_id=interest_id, custom_value=custom)
 
 
 @login_required
@@ -82,6 +127,10 @@ class StudentDataDetailView(LoginRequiredMixin, DetailView):
         is_staff = user.is_staff or user.groups.filter(name="data_management_staff").exists()
         ctx['is_staff_view'] = is_staff
         ctx['basic_user'] = user if is_staff else None
+        if self.object:
+            ctx['interests_by_category'] = _get_interests_grouped(self.object)
+        else:
+            ctx['interests_by_category'] = []
         return ctx
 
 
@@ -113,10 +162,12 @@ class StudentDataUpdateView(LoginRequiredMixin, UpdateView):
         ctx.update({
             'basic_fields': [
                 'whatsapp_number', 'birth_place', 'birth_date', 'gender',
-                'marital_status', 'citizenship_status', 'region_origin', 'parents_name', 'parents_phone'
+                'marital_status', 'membership_status', 'citizenship_status', 'region_origin',
+                'parents_name', 'parents_phone'
             ],
             'academic_fields': [
-                'institution', 'faculty', 'major', 'degree_level', 'semester_level', 'latest_grade', 'level'
+                'institution', 'institution_custom', 'faculty', 'faculty_custom',
+                'major', 'major_custom', 'degree_level', 'semester_level', 'latest_grade', 'level'
             ],
             'identity_extra_fields': [
                 'passport_number', 'nik', 'lapdik_number', 'arrival_date', 'school_origin',
@@ -124,16 +175,17 @@ class StudentDataUpdateView(LoginRequiredMixin, UpdateView):
             ],
             'guardian_fields': ['photo_url', 'guardian_name', 'guardian_phone'],
             'health_fields': ['disease_history', 'disease_status'],
-            'interest_field_pairs': [
-                ('sport_interest', 'sport_achievement'),
-                ('art_interest', 'art_achievement'),
-                ('literacy_interest', 'literacy_achievement'),
-                ('science_interest', 'science_achievement'),
-                ('mtq_interest', 'mtq_achievement'),
-                ('media_interest', 'media_achievement'),
-            ],
+            'interest_categories': _get_interest_categories_context(),
+            'selected_interest_ids': set(
+                self.object.student_interests.values_list('interest_id', flat=True)
+            ) if self.object.pk else set(),
+            'student_interest_customs': {
+                si.interest_id: si.custom_value
+                for si in self.object.student_interests.all()
+            } if self.object.pk else {},
             'financial_fields': [
-                'education_funding', 'scholarship_source', 'living_cost', 'monthly_income'
+                'education_funding', 'scholarship_source',
+                'living_cost', 'monthly_income'
             ],
             'organization_field': 'organization_history',
             'photo_field': 'photo',
@@ -149,6 +201,7 @@ class StudentDataUpdateView(LoginRequiredMixin, UpdateView):
         # Set draft status based on action prior to saving
         form.instance.is_draft = (action == 'save_draft')
         response = super().form_valid(form)
+        _save_student_interests(self.object, self.request.POST)
         if action in ['save', 'save_back', 'save_draft']:
             changed = []
             for f in form_fields:
@@ -481,7 +534,12 @@ class StaffStudentDetailView(LoginRequiredMixin, DetailView):
         reset_creds = self.request.session.pop('reset_student_credentials', None)
         if reset_creds:
             ctx['reset_student_credentials'] = reset_creds
+        ctx['interests_by_category'] = self._get_interests_grouped(self.object)
         return ctx
+
+    @staticmethod
+    def _get_interests_grouped(student):
+        return _get_interests_grouped(student)
 
 
 class StaffStudentUpdateView(LoginRequiredMixin, UpdateView):
@@ -514,23 +572,25 @@ class StaffStudentUpdateView(LoginRequiredMixin, UpdateView):
         ctx.update({
             'basic_fields': [
                 'email', 'first_name', 'last_name', 'whatsapp_number', 'birth_place', 'birth_date', 'gender',
-                'marital_status', 'citizenship_status', 'region_origin', 'parents_name', 'parents_phone'
+                'marital_status', 'membership_status', 'citizenship_status', 'region_origin',
+                'parents_name', 'parents_phone'
             ],
             'academic_fields': [
-                'institution', 'faculty', 'major', 'degree_level', 'semester_level', 'latest_grade', 'level'
+                'institution', 'institution_custom', 'faculty', 'faculty_custom',
+                'major', 'major_custom', 'degree_level', 'semester_level', 'latest_grade', 'level'
             ],
             'identity_extra_fields': [
                 'passport_number', 'nik', 'lapdik_number', 'arrival_date', 'school_origin', 'home_name', 'home_location'
             ],
             'health_fields': ['disease_history', 'disease_status'],
-            'interest_field_pairs': [
-                ('sport_interest', 'sport_achievement'),
-                ('art_interest', 'art_achievement'),
-                ('literacy_interest', 'literacy_achievement'),
-                ('science_interest', 'science_achievement'),
-                ('mtq_interest', 'mtq_achievement'),
-                ('media_interest', 'media_achievement'),
-            ],
+            'interest_categories': _get_interest_categories_context(),
+            'selected_interest_ids': set(
+                self.object.student_interests.values_list('interest_id', flat=True)
+            ) if self.object.pk else set(),
+            'student_interest_customs': {
+                si.interest_id: si.custom_value
+                for si in self.object.student_interests.all()
+            } if self.object.pk else {},
             'organization_field': 'organization_history',
             'next_url': self.request.GET.get('next') or self.request.POST.get('next') or ''
         })
@@ -552,6 +612,7 @@ class StaffStudentUpdateView(LoginRequiredMixin, UpdateView):
         # Set draft status based on action prior to saving
         form.instance.is_draft = (action == 'save_draft')
         response = super().form_valid(form)
+        _save_student_interests(self.object, self.request.POST)
         if action in ['save', 'save_back', 'save_draft']:
             changed = []
             for f in form_fields:
@@ -619,23 +680,20 @@ class StaffStudentCreateView(LoginRequiredMixin, CreateView):
         ctx.update({
             'basic_fields': [
                 'email', 'first_name', 'last_name', 'whatsapp_number', 'birth_place', 'birth_date', 'gender',
-                'marital_status', 'citizenship_status', 'region_origin', 'parents_name', 'parents_phone'
+                'marital_status', 'membership_status', 'citizenship_status', 'region_origin',
+                'parents_name', 'parents_phone'
             ],
             'academic_fields': [
-                'institution', 'faculty', 'major', 'degree_level', 'semester_level', 'latest_grade', 'level'
+                'institution', 'institution_custom', 'faculty', 'faculty_custom',
+                'major', 'major_custom', 'degree_level', 'semester_level', 'latest_grade', 'level'
             ],
             'identity_extra_fields': [
                 'passport_number', 'nik', 'lapdik_number', 'arrival_date', 'school_origin', 'home_name', 'home_location'
             ],
             'health_fields': ['disease_history', 'disease_status'],
-            'interest_field_pairs': [
-                ('sport_interest', 'sport_achievement'),
-                ('art_interest', 'art_achievement'),
-                ('literacy_interest', 'literacy_achievement'),
-                ('science_interest', 'science_achievement'),
-                ('mtq_interest', 'mtq_achievement'),
-                ('media_interest', 'media_achievement'),
-            ],
+            'interest_categories': _get_interest_categories_context(),
+            'selected_interest_ids': set(),
+            'student_interest_customs': {},
             'organization_field': 'organization_history',
             'next_url': self.request.GET.get('next') or self.request.POST.get('next') or ''
         })
@@ -743,6 +801,7 @@ class StaffStudentCreateView(LoginRequiredMixin, CreateView):
                     record_id=str(self.object.id),
                     success=True
                 )
+                _save_student_interests(self.object, self.request.POST)
             if existing_student:
                 target_url = self.get_success_url()
                 logger.info("[StaffStudentCreateView] redirecting (reuse path) student_id=%s to %s", self.object.pk,
@@ -813,7 +872,7 @@ def export_students_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="students.csv"'
     writer = csv.writer(response)
-    writer.writerow(['Full Name', 'Email', 'Passport', 'NIK', 'Degree', 'Semester', 'Faculty', 'Major', 'Level'])
+    writer.writerow(['Full Name', 'Email', 'Passport', 'NIK', 'Degree', 'Tingkat', 'Faculty', 'Major', 'Level', 'Membership'])
     for s in qs.iterator():
         writer.writerow([
             s.full_name,
@@ -821,10 +880,11 @@ def export_students_csv(request):
             s.passport_number or '',
             s.nik or '',
             s.degree_level,
-            s.semester_level,
-            s.faculty,
-            s.major,
+            s.get_semester_level_display() if s.semester_level else '',
+            s.faculty_display,
+            s.major_display,
             s.get_level_display(),
+            s.get_membership_status_display() if s.membership_status else '',
         ])
     return response
 

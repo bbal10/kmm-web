@@ -1,9 +1,136 @@
 from django import forms
 from django.contrib.auth import get_user_model
+import json
+import logging
+import re
+from functools import lru_cache
+from urllib.request import urlopen
 
 from .models import Interest, InterestCategory, Student, StudentInterest
 
 User = get_user_model()
+
+logger = logging.getLogger(__name__)
+
+COUNTRY_CODES_JSON_URL = (
+    'https://gist.githubusercontent.com/anubhavshrimal/75f6183458db8c453306f93521e93d37/raw/'
+    'f77e7598a8503f1f70528ae1cbf9f66755698a16/CountryCodes.json'
+)
+
+FALLBACK_COUNTRY_CODE_CHOICES = [
+    ('+20', 'Mesir (+20)'),
+    ('+62', 'Indonesia (+62)'),
+    ('+60', 'Malaysia (+60)'),
+    ('+65', 'Singapura (+65)'),
+    ('+966', 'Arab Saudi (+966)'),
+    ('+971', 'Uni Emirat Arab (+971)'),
+    ('+974', 'Qatar (+974)'),
+    ('+965', 'Kuwait (+965)'),
+    ('+968', 'Oman (+968)'),
+    ('+90', 'Turki (+90)'),
+    ('+44', 'United Kingdom (+44)'),
+    ('+1', 'United States / Canada (+1)'),
+    ('+61', 'Australia (+61)'),
+    ('+81', 'Jepang (+81)'),
+    ('+82', 'Korea Selatan (+82)'),
+    ('+49', 'Jerman (+49)'),
+    ('+33', 'Prancis (+33)'),
+    ('+39', 'Italia (+39)'),
+    ('+31', 'Belanda (+31)'),
+    ('+34', 'Spanyol (+34)'),
+]
+
+
+def _normalize_country_code(value):
+    if value is None:
+        return None
+    digits = re.sub(r'\D', '', str(value))
+    if not digits:
+        return None
+    return f'+{digits}'
+
+
+@lru_cache(maxsize=1)
+def get_country_code_choices():
+    """Get country codes from remote JSON with safe fallback."""
+    try:
+        with urlopen(COUNTRY_CODES_JSON_URL, timeout=8) as response:
+            payload = json.loads(response.read().decode('utf-8'))
+
+        choices = []
+        seen = set()
+        for item in payload if isinstance(payload, list) else []:
+            if not isinstance(item, dict):
+                continue
+            code = _normalize_country_code(item.get('dial_code') or item.get('dialCode'))
+            if not code or code in seen:
+                continue
+
+            name = (item.get('name') or '').strip() or f'Country {code}'
+            choices.append((code, f'{name} ({code})'))
+            seen.add(code)
+
+        if choices:
+            return sorted(choices, key=lambda x: (len(x[0]), x[0]))
+
+    except Exception as exc:
+        logger.warning('Failed to load country codes from remote JSON: %s', exc)
+
+    return FALLBACK_COUNTRY_CODE_CHOICES
+
+
+def _get_country_codes_for_validation():
+    return sorted([code for code, _ in get_country_code_choices()], key=len, reverse=True)
+
+
+def _validate_whatsapp_number(form, cleaned_data):
+    raw_value = cleaned_data.get('whatsapp_number')
+    if not raw_value:
+        cleaned_data['whatsapp_number'] = ''
+        return cleaned_data
+
+    normalized = re.sub(r'[\u200e\u200f\u202a-\u202e\u2066-\u2069]', '', str(raw_value)).strip()
+    if not normalized:
+        cleaned_data['whatsapp_number'] = ''
+        return cleaned_data
+
+    if not normalized.startswith('+'):
+        form.add_error('whatsapp_number', 'Gunakan format internasional, contoh: +628123456789.')
+        return cleaned_data
+
+    if not re.fullmatch(r'^\+\d[\d\s\-().]{5,24}$', normalized):
+        form.add_error('whatsapp_number', 'Format nomor WhatsApp tidak valid.')
+        return cleaned_data
+
+    digits_only = '+' + re.sub(r'\D', '', normalized)
+    matched_code = next((code for code in _get_country_codes_for_validation() if digits_only.startswith(code)), None)
+
+    if not matched_code:
+        form.add_error('whatsapp_number', 'Kode negara tidak dikenali. Pilih dari daftar kode negara.')
+        return cleaned_data
+
+    national_number = digits_only[len(matched_code):]
+    if len(national_number) < 5:
+        form.add_error('whatsapp_number', 'Nomor setelah kode negara terlalu pendek.')
+        return cleaned_data
+
+    cleaned_data['whatsapp_number'] = f'{matched_code}{national_number}'
+    return cleaned_data
+
+
+def _validate_other_choice(form, cleaned_data, choice_field, custom_field):
+    choice_value = cleaned_data.get(choice_field)
+    custom_value = (cleaned_data.get(custom_field) or '').strip()
+
+    if choice_value == 'other':
+        if not custom_value:
+            form.add_error(custom_field, 'Wajib diisi ketika memilih "Lainnya".')
+        cleaned_data[custom_field] = custom_value
+    else:
+        # Prevent stale custom text when selection is no longer "other"
+        cleaned_data[custom_field] = ''
+
+    return cleaned_data
 
 
 class UserRegistrationForm(forms.ModelForm):
@@ -87,7 +214,9 @@ class StudentForm(forms.ModelForm):
         widgets = {
             # Text inputs dengan styling konsisten
             'whatsapp_number': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
+                'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary',
+                'placeholder': '+628123456789',
+                'list': 'country-code-list'}),
             'birth_place': forms.TextInput(attrs={
                 'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
             'birth_date': forms.DateInput(attrs={'type': 'date',
@@ -188,7 +317,10 @@ class StudentForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        print(cleaned_data)
+        _validate_other_choice(self, cleaned_data, 'institution', 'institution_custom')
+        _validate_other_choice(self, cleaned_data, 'faculty', 'faculty_custom')
+        _validate_other_choice(self, cleaned_data, 'major', 'major_custom')
+        _validate_whatsapp_number(self, cleaned_data)
         return cleaned_data
 
 
@@ -235,7 +367,9 @@ class StaffStudentForm(forms.ModelForm):
         widgets = {
             # Text inputs dengan styling konsisten
             'whatsapp_number': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
+                'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm',
+                'placeholder': '+628123456789',
+                'list': 'country-code-list'}),
             'birth_place': forms.TextInput(attrs={
                 'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
             'citizenship_status': forms.TextInput(attrs={
@@ -317,6 +451,14 @@ class StaffStudentForm(forms.ModelForm):
             'living_cost': forms.Select(attrs={'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
             'monthly_income': forms.Select(attrs={'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        _validate_other_choice(self, cleaned_data, 'institution', 'institution_custom')
+        _validate_other_choice(self, cleaned_data, 'faculty', 'faculty_custom')
+        _validate_other_choice(self, cleaned_data, 'major', 'major_custom')
+        _validate_whatsapp_number(self, cleaned_data)
+        return cleaned_data
 
 
 class StaffStudentCreateForm(StaffStudentForm):

@@ -78,7 +78,7 @@ class Student(models.Model):
         ('mahad_al_azhar', "Ma'had Al Azhar"),
         ('markaz_zayed', 'Markaz Syeikh Zayed'),
         ('dirasah_khassah', 'Dirasah Khassah (Markaz Tatwir)'),
-        ('other', 'Lainnya (Isi Sendiri)'),
+        ('other', 'Lainnya'),
     ]
     FACULTY_CHOICES = [
         ('dakwah', 'Dakwah Islamiyyah'),
@@ -96,7 +96,7 @@ class Student(models.Model):
         ('tarbiyyah', 'Tarbiyyah'),
         ('tijarah', 'Tijarah'),
         ('ushuluddin', 'Ushuluddin'),
-        ('other', 'Lainnya (Isi Sendiri)'),
+        ('other', 'Lainnya'),
     ]
     MAJOR_CHOICES = [
         ('adab_naqd', 'Adab wa Naqd'),
@@ -179,11 +179,11 @@ class Student(models.Model):
     region_origin = models.CharField(max_length=80, blank=True)
     whatsapp_number = models.CharField(max_length=20, blank=True)
     institution = models.CharField(max_length=50, choices=INSTITUTION_CHOICES, blank=True, verbose_name="Institusi")
-    institution_custom = models.CharField(max_length=200, blank=True, verbose_name="Institusi (Isi Sendiri)")
+    institution_custom = models.CharField(max_length=200, blank=True, verbose_name="Institusi")
     faculty = models.CharField(max_length=50, choices=FACULTY_CHOICES, blank=True, verbose_name="Fakultas")
-    faculty_custom = models.CharField(max_length=200, blank=True, verbose_name="Fakultas (Isi Sendiri)")
+    faculty_custom = models.CharField(max_length=200, blank=True, verbose_name="Fakultas")
     major = models.CharField(max_length=50, choices=MAJOR_CHOICES, blank=True, verbose_name="Jurusan")
-    major_custom = models.CharField(max_length=200, blank=True, verbose_name="Jurusan (Isi Sendiri)")
+    major_custom = models.CharField(max_length=200, blank=True, verbose_name="Jurusan")
     degree_level = models.CharField(max_length=20, choices=DEGREE_LEVEL_CHOICES, db_index=True)
     semester_level = models.CharField(max_length=20, choices=TINGKAT_CHOICES, blank=True, verbose_name="Tingkat")
     latest_grade = models.CharField(max_length=20, choices=LATEST_GRADE_CHOICES, blank=True, verbose_name="Nilai Terakhir")

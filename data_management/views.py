@@ -19,7 +19,14 @@ from django.utils.http import urlencode
 from django.utils.text import slugify
 from django.views.generic import DetailView, UpdateView, ListView, CreateView, DeleteView
 
-from .forms import UserRegistrationForm, UserLoginForm, StudentForm, StaffStudentForm, StaffStudentCreateForm
+from .forms import (
+    get_country_code_choices,
+    UserRegistrationForm,
+    UserLoginForm,
+    StudentForm,
+    StaffStudentForm,
+    StaffStudentCreateForm,
+)
 from .models import Interest, InterestCategory, Student, StudentInterest
 from .utils.logging_utils import security_logger, audit_logger, get_user_info, log_user_action
 
@@ -189,6 +196,7 @@ class StudentDataUpdateView(LoginRequiredMixin, UpdateView):
             ],
             'organization_field': 'organization_history',
             'photo_field': 'photo',
+            'country_code_options': get_country_code_choices(),
         })
         return ctx
 
@@ -592,7 +600,8 @@ class StaffStudentUpdateView(LoginRequiredMixin, UpdateView):
                 for si in self.object.student_interests.all()
             } if self.object.pk else {},
             'organization_field': 'organization_history',
-            'next_url': self.request.GET.get('next') or self.request.POST.get('next') or ''
+            'next_url': self.request.GET.get('next') or self.request.POST.get('next') or '',
+            'country_code_options': get_country_code_choices(),
         })
         return ctx
 
@@ -695,7 +704,8 @@ class StaffStudentCreateView(LoginRequiredMixin, CreateView):
             'selected_interest_ids': set(),
             'student_interest_customs': {},
             'organization_field': 'organization_history',
-            'next_url': self.request.GET.get('next') or self.request.POST.get('next') or ''
+            'next_url': self.request.GET.get('next') or self.request.POST.get('next') or '',
+            'country_code_options': get_country_code_choices(),
         })
         return ctx
 

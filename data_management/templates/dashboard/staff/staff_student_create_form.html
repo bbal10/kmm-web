@@ -1,80 +1,113 @@
-{% extends 'base.html' %}
-{% load static split_url %}
-{% block title %}Tambah Mahasiswa Baru{% endblock %}
-
-{% block navbar %}{% include 'navbar.html' %}{% endblock %}
-{% block sidebar %}{% include 'sidebar.html' %}{% endblock %}
-
-{% block content %}
+{% extends 'base.html' %} {% load static split_url %} {% block title %} Tambah
+Mahasiswa Baru {% endblock %} {% block navbar %}{% include 'navbar.html' %}{%
+endblock %} {% block sidebar %}{% include 'sidebar.html' %}{% endblock %} {%
+block content %}
 <div class="w-full p-6 space-y-6" x-data="{ submitting:false }">
   <div class="flex items-center justify-between flex-wrap gap-4">
     <div class="flex items-center gap-3 flex-wrap">
       <h1 class="text-2xl font-bold text-gray-800">Tambah Mahasiswa</h1>
-      <span x-show="true" class="px-2 py-0.5 text-xs rounded bg-blue-600 text-white font-semibold">Baru</span>
+      <span
+        x-show="true"
+        class="px-2 py-0.5 text-xs rounded bg-blue-600 text-white font-semibold"
+        >Baru</span
+      >
     </div>
     <div class="flex items-center gap-2">
-      <a href="{% url 'data_management:staff_student_list' %}" class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium">← Kembali</a>
+      <a
+        href="{% url 'data_management:staff_student_list' %}"
+        class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium"
+        >← Kembali</a
+      >
     </div>
   </div>
 
-  <form id="student-create-form" method="post" enctype="multipart/form-data" class="bg-white shadow rounded-lg p-6 space-y-8" x-on:submit="submitting=true">
+  <form
+    id="student-create-form"
+    method="post"
+    enctype="multipart/form-data"
+    class="bg-white shadow rounded-lg p-6 space-y-8"
+    x-on:submit="submitting=true"
+  >
     {% csrf_token %}
     <input type="hidden" name="next" value="{{ next_url }}" />
     {{ form.is_draft }}
 
+    <datalist id="country-code-list">
+      {% for code, label in country_code_options %}
+      <option value="{{ code }}">{{ label }}</option>
+      {% endfor %}
+    </datalist>
+
     {% if form.non_field_errors %}
-      <div class="p-4 rounded border border-red-300 bg-red-50 text-sm text-red-700">
-        {% for err in form.non_field_errors %}<p>{{ err }}</p>{% endfor %}
-      </div>
+    <div
+      class="p-4 rounded border border-red-300 bg-red-50 text-sm text-red-700"
+    >
+      {% for err in form.non_field_errors %}
+      <p>{{ err }}</p>
+      {% endfor %}
+    </div>
     {% endif %}
 
     <!-- Identitas Dasar -->
     <div class="space-y-4">
       <h2 class="text-lg font-semibold text-gray-800">Identitas Dasar</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-        {% for field_name in basic_fields %}
-          {% with f=form|get_field:field_name %}
-          <div {% if field_name == 'region_origin' %}x-data="kabupatenSelect()"{% endif %}>
-            <label class="block text-gray-600 mb-1 text-xs font-medium">{{ f.label }}</label>
+        {% for field_name in basic_fields %} {% with f=form|get_field:field_name
+        %}
+        <div
+          {%
+          if
+          field_name=""
+          ="region_origin"
+          %}x-data="kabupatenSelect()"
+          {%
+          endif
+          %}
+        >
+          <label class="block text-gray-600 mb-1 text-xs font-medium"
+            >{{ f.label }}</label
+          >
 
-            {% if field_name == 'region_origin' %}
-              <!-- Custom autocomplete for region_origin -->
-              <div class="relative">
-                <input
-                  type="text"
-                  name="{{ f.name }}"
-                  x-model="query"
-                  x-on:input="searchKabupaten()"
-                  x-on:focus="show = !!filteredKabupaten.length"
-                  x-on:blur="hideList()"
-                  placeholder="Ketik nama kabupaten/kota..."
-                  class="mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm"
-                  autocomplete="off"
-                />
+          {% if field_name == 'whatsapp_number' %} {{ f }}
+          <p class="text-[11px] text-gray-500 mt-1">
+            Gunakan format internasional. Ketik kode negara (contoh: +62, +20)
+            untuk melihat daftar.
+          </p>
+          {% elif field_name == 'region_origin' %}
+          <!-- Custom autocomplete for region_origin -->
+          <div class="relative">
+            <input
+              type="text"
+              name="{{ f.name }}"
+              x-model="query"
+              x-on:input="searchKabupaten()"
+              x-on:focus="show = !!filteredKabupaten.length"
+              x-on:blur="hideList()"
+              placeholder="Ketik nama kabupaten/kota..."
+              class="mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm"
+              autocomplete="off"
+            />
 
-                <!-- Dropdown list -->
+            <!-- Dropdown list -->
+            <div
+              x-show="show && filteredKabupaten.length"
+              x-transition
+              class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto"
+            >
+              <template x-for="kab in filteredKabupaten" :key="kab">
                 <div
-                  x-show="show && filteredKabupaten.length"
-                  x-transition
-                  class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto"
-                >
-                  <template x-for="kab in filteredKabupaten" :key="kab">
-                    <div
-                      x-text="kab"
-                      x-on:click="selectKabupaten(kab)"
-                      class="px-3 py-2 cursor-pointer hover:bg-blue-50 border-b border-gray-100 last:border-b-0"
-                    ></div>
-                  </template>
-                </div>
-              </div>
-            {% else %}
-              {{ f }}
-            {% endif %}
-
-            {% if f.errors %}<p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>{% endif %}
+                  x-text="kab"
+                  x-on:click="selectKabupaten(kab)"
+                  class="px-3 py-2 cursor-pointer hover:bg-blue-50 border-b border-gray-100 last:border-b-0"
+                ></div>
+              </template>
+            </div>
           </div>
-          {% endwith %}
-        {% endfor %}
+          {% else %} {{ f }} {% endif %} {% if f.errors %}
+          <p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>
+          {% endif %}
+        </div>
+        {% endwith %} {% endfor %}
       </div>
     </div>
 
@@ -82,54 +115,64 @@
     <div class="space-y-4">
       <h2 class="text-lg font-semibold text-gray-800">Akademik</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-        {% for field_name in academic_fields %}
-          {% if field_name == 'institution_custom' or field_name == 'faculty_custom' or field_name == 'major_custom' %}
-            {# Custom fields rendered inline with their parent #}
-          {% elif field_name == 'institution' or field_name == 'faculty' or field_name == 'major' %}
-            {% with f=form|get_field:field_name %}
-            <div x-data="{ showCustom: $el.querySelector('select').value === 'other' }">
-              <label class="block text-gray-600 mb-1 text-xs font-medium">{{ f.label }}</label>
-              <div x-on:change="showCustom = $event.target.value === 'other'">
-                {{ f }}
-              </div>
-              {% if f.errors %}<p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>{% endif %}
-              {% if field_name == 'institution' %}
-                {% with cf=form|get_field:"institution_custom" %}
-                <div x-show="showCustom" x-cloak class="mt-2">
-                  <label class="block text-gray-600 mb-1 text-xs font-medium">{{ cf.label }} (Isi Sendiri)</label>
-                  {{ cf }}
-                  {% if cf.errors %}<p class="text-xs text-red-600 mt-1">{{ cf.errors.0 }}</p>{% endif %}
-                </div>
-                {% endwith %}
-              {% elif field_name == 'faculty' %}
-                {% with cf=form|get_field:"faculty_custom" %}
-                <div x-show="showCustom" x-cloak class="mt-2">
-                  <label class="block text-gray-600 mb-1 text-xs font-medium">{{ cf.label }} (Isi Sendiri)</label>
-                  {{ cf }}
-                  {% if cf.errors %}<p class="text-xs text-red-600 mt-1">{{ cf.errors.0 }}</p>{% endif %}
-                </div>
-                {% endwith %}
-              {% elif field_name == 'major' %}
-                {% with cf=form|get_field:"major_custom" %}
-                <div x-show="showCustom" x-cloak class="mt-2">
-                  <label class="block text-gray-600 mb-1 text-xs font-medium">{{ cf.label }} (Isi Sendiri)</label>
-                  {{ cf }}
-                  {% if cf.errors %}<p class="text-xs text-red-600 mt-1">{{ cf.errors.0 }}</p>{% endif %}
-                </div>
-                {% endwith %}
-              {% endif %}
-            </div>
-            {% endwith %}
-          {% else %}
-            {% with f=form|get_field:field_name %}
-            <div>
-              <label class="block text-gray-600 mb-1 text-xs font-medium">{{ f.label }}</label>
-              {{ f }}
-              {% if f.errors %}<p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>{% endif %}
-            </div>
-            {% endwith %}
+        {% for field_name in academic_fields %} {% if field_name ==
+        'institution_custom' or field_name == 'faculty_custom' or field_name ==
+        'major_custom' %} {# Custom fields rendered inline with their parent #}
+        {% elif field_name == 'institution' or field_name == 'faculty' or
+        field_name == 'major' %} {% with f=form|get_field:field_name %}
+        <div
+          x-data="{ showCustom: $el.querySelector('select').value === 'other' }"
+        >
+          <label class="block text-gray-600 mb-1 text-xs font-medium"
+            >{{ f.label }}</label
+          >
+          <div x-on:change="showCustom = $event.target.value === 'other'">
+            {{ f }}
+          </div>
+          {% if f.errors %}
+          <p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>
+          {% endif %} {% if field_name == 'institution' %} {% with
+          cf=form|get_field:"institution_custom" %}
+          <div x-show="showCustom" x-cloak class="mt-2">
+            <label class="block text-gray-600 mb-1 text-xs font-medium"
+              >{{ cf.label }} (Isi Sendiri)</label
+            >
+            {{ cf }} {% if cf.errors %}
+            <p class="text-xs text-red-600 mt-1">{{ cf.errors.0 }}</p>
+            {% endif %}
+          </div>
+          {% endwith %} {% elif field_name == 'faculty' %} {% with
+          cf=form|get_field:"faculty_custom" %}
+          <div x-show="showCustom" x-cloak class="mt-2">
+            <label class="block text-gray-600 mb-1 text-xs font-medium"
+              >{{ cf.label }} (Isi Sendiri)</label
+            >
+            {{ cf }} {% if cf.errors %}
+            <p class="text-xs text-red-600 mt-1">{{ cf.errors.0 }}</p>
+            {% endif %}
+          </div>
+          {% endwith %} {% elif field_name == 'major' %} {% with
+          cf=form|get_field:"major_custom" %}
+          <div x-show="showCustom" x-cloak class="mt-2">
+            <label class="block text-gray-600 mb-1 text-xs font-medium"
+              >{{ cf.label }} (Isi Sendiri)</label
+            >
+            {{ cf }} {% if cf.errors %}
+            <p class="text-xs text-red-600 mt-1">{{ cf.errors.0 }}</p>
+            {% endif %}
+          </div>
+          {% endwith %} {% endif %}
+        </div>
+        {% endwith %} {% else %} {% with f=form|get_field:field_name %}
+        <div>
+          <label class="block text-gray-600 mb-1 text-xs font-medium"
+            >{{ f.label }}</label
+          >
+          {{ f }} {% if f.errors %}
+          <p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>
           {% endif %}
-        {% endfor %}
+        </div>
+        {% endwith %} {% endif %} {% endfor %}
       </div>
     </div>
 
@@ -137,15 +180,17 @@
     <div class="space-y-4">
       <h2 class="text-lg font-semibold text-gray-800">Identitas Tambahan</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-        {% for field_name in identity_extra_fields %}
-          {% with f=form|get_field:field_name %}
-          <div>
-            <label class="block text-gray-600 mb-1 text-xs font-medium">{{ f.label }}</label>
-            {{ f }}
-            {% if f.errors %}<p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>{% endif %}
-          </div>
-          {% endwith %}
-        {% endfor %}
+        {% for field_name in identity_extra_fields %} {% with
+        f=form|get_field:field_name %}
+        <div>
+          <label class="block text-gray-600 mb-1 text-xs font-medium"
+            >{{ f.label }}</label
+          >
+          {{ f }} {% if f.errors %}
+          <p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>
+          {% endif %}
+        </div>
+        {% endwith %} {% endfor %}
       </div>
     </div>
 
@@ -153,15 +198,17 @@
     <div class="space-y-4">
       <h2 class="text-lg font-semibold text-gray-800">Kesehatan</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-        {% for field_name in health_fields %}
-          {% with f=form|get_field:field_name %}
-          <div>
-            <label class="block text-gray-600 mb-1 text-xs font-medium">{{ f.label }}</label>
-            {{ f }}
-            {% if f and f.errors %}<p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>{% endif %}
-          </div>
-          {% endwith %}
-        {% endfor %}
+        {% for field_name in health_fields %} {% with
+        f=form|get_field:field_name %}
+        <div>
+          <label class="block text-gray-600 mb-1 text-xs font-medium"
+            >{{ f.label }}</label
+          >
+          {{ f }} {% if f and f.errors %}
+          <p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>
+          {% endif %}
+        </div>
+        {% endwith %} {% endfor %}
       </div>
     </div>
 
@@ -169,22 +216,27 @@
     <div class="space-y-4">
       <h2 class="text-lg font-semibold text-gray-800">Minat & Prestasi</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-        {% for pair in interest_field_pairs %}
-          {% with f1=form|get_field:pair.0 f2=form|get_field:pair.1 %}
-          <div class="space-y-2">
-            <div>
-              <label class="block text-gray-600 mb-1 text-xs font-medium">{{ f1.label }}</label>
-              {{ f1 }}
-              {% if f1 and f1.errors %}<p class="text-xs text-red-600 mt-1">{{ f1.errors.0 }}</p>{% endif %}
-            </div>
-            <div>
-              <label class="block text-gray-600 mb-1 text-xs font-medium">{{ f2.label }}</label>
-              {{ f2 }}
-              {% if f2 and f2.errors %}<p class="text-xs text-red-600 mt-1">{{ f2.errors.0 }}</p>{% endif %}
-            </div>
+        {% for pair in interest_field_pairs %} {% with f1=form|get_field:pair.0
+        f2=form|get_field:pair.1 %}
+        <div class="space-y-2">
+          <div>
+            <label class="block text-gray-600 mb-1 text-xs font-medium"
+              >{{ f1.label }}</label
+            >
+            {{ f1 }} {% if f1 and f1.errors %}
+            <p class="text-xs text-red-600 mt-1">{{ f1.errors.0 }}</p>
+            {% endif %}
           </div>
-          {% endwith %}
-        {% endfor %}
+          <div>
+            <label class="block text-gray-600 mb-1 text-xs font-medium"
+              >{{ f2.label }}</label
+            >
+            {{ f2 }} {% if f2 and f2.errors %}
+            <p class="text-xs text-red-600 mt-1">{{ f2.errors.0 }}</p>
+            {% endif %}
+          </div>
+        </div>
+        {% endwith %} {% endfor %}
       </div>
     </div>
 
@@ -193,10 +245,12 @@
       <h2 class="text-lg font-semibold text-gray-800">Riwayat Organisasi</h2>
       <div>
         {% with f=form|get_field:organization_field %}
-        <label class="block text-gray-600 mb-1 text-xs font-medium">{{ f.label }}</label>
-        {{ f }}
-        {% if f and f.errors %}<p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>{% endif %}
-        {% endwith %}
+        <label class="block text-gray-600 mb-1 text-xs font-medium"
+          >{{ f.label }}</label
+        >
+        {{ f }} {% if f and f.errors %}
+        <p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>
+        {% endif %} {% endwith %}
       </div>
     </div>
 
@@ -206,93 +260,135 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
         {% with f=form|get_field:"education_funding" %}
         <div>
-          <label class="block text-gray-600 mb-1 text-xs font-medium">{{ f.label }}</label>
-          {{ f }}
-          {% if f.errors %}<p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>{% endif %}
+          <label class="block text-gray-600 mb-1 text-xs font-medium"
+            >{{ f.label }}</label
+          >
+          {{ f }} {% if f.errors %}
+          <p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>
+          {% endif %}
         </div>
-        {% endwith %}
-        {% with f=form|get_field:"scholarship_source" %}
+        {% endwith %} {% with f=form|get_field:"scholarship_source" %}
         <div>
-          <label class="block text-gray-600 mb-1 text-xs font-medium">{{ f.label }}</label>
-          {{ f }}
-          {% if f.errors %}<p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>{% endif %}
+          <label class="block text-gray-600 mb-1 text-xs font-medium"
+            >{{ f.label }}</label
+          >
+          {{ f }} {% if f.errors %}
+          <p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>
+          {% endif %}
         </div>
-        {% endwith %}
-        {% with f=form|get_field:"living_cost" %}
+        {% endwith %} {% with f=form|get_field:"living_cost" %}
         <div>
-          <label class="block text-gray-600 mb-1 text-xs font-medium">{{ f.label }}</label>
-          {{ f }}
-          {% if f.errors %}<p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>{% endif %}
+          <label class="block text-gray-600 mb-1 text-xs font-medium"
+            >{{ f.label }}</label
+          >
+          {{ f }} {% if f.errors %}
+          <p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>
+          {% endif %}
         </div>
-        {% endwith %}
-        {% with f=form|get_field:"monthly_income" %}
+        {% endwith %} {% with f=form|get_field:"monthly_income" %}
         <div>
-          <label class="block text-gray-600 mb-1 text-xs font-medium">{{ f.label }}</label>
-          {{ f }}
-          {% if f.errors %}<p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>{% endif %}
+          <label class="block text-gray-600 mb-1 text-xs font-medium"
+            >{{ f.label }}</label
+          >
+          {{ f }} {% if f.errors %}
+          <p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>
+          {% endif %}
         </div>
         {% endwith %}
       </div>
     </div>
 
     <div class="flex flex-wrap justify-end gap-3 pt-4 border-t">
-      <button type="submit" name="action" value="save_draft" class="px-5 py-2.5 rounded bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium" x-bind:disabled="submitting">Simpan Draft</button>
-      <button type="submit" name="action" value="save_back" class="px-5 py-2.5 rounded bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium" x-bind:disabled="submitting">Simpan & Kembali</button>
-      <button type="submit" name="action" value="save" class="px-5 py-2.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium" x-bind:disabled="submitting">Simpan</button>
+      <button
+        type="submit"
+        name="action"
+        value="save_draft"
+        class="px-5 py-2.5 rounded bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium"
+        x-bind:disabled="submitting"
+      >
+        Simpan Draft
+      </button>
+      <button
+        type="submit"
+        name="action"
+        value="save_back"
+        class="px-5 py-2.5 rounded bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium"
+        x-bind:disabled="submitting"
+      >
+        Simpan & Kembali
+      </button>
+      <button
+        type="submit"
+        name="action"
+        value="save"
+        class="px-5 py-2.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
+        x-bind:disabled="submitting"
+      >
+        Simpan
+      </button>
     </div>
   </form>
 </div>
 
 <script>
-function kabupatenSelect() {
-  return {
-    kabupatenList: [],
-    filteredKabupaten: [],
-    query: '',
-    show: false,
-    fetchKabupaten() {
-      fetch('https://api-regional-indonesia.vercel.app/api/cities/8')
-        .then(res => res.json())
-        .then(data => {
-          // Use the 'data' key from the API response
-          this.kabupatenList = (data.data || []).map(k => k.name);
-        })
-        .catch(error => {
-          console.error('Error fetching kabupaten data:', error);
-        });
-    },
-    searchKabupaten() {
-      if (!this.kabupatenList.length) return;
-      const q = this.query.toLowerCase();
-      this.filteredKabupaten = this.kabupatenList.filter(kab => kab.toLowerCase().includes(q)).slice(0, 10);
-      this.show = !!this.filteredKabupaten.length;
-    },
-    selectKabupaten(kab) {
-      this.query = kab;
-      this.show = false;
-    },
-    hideList() {
-      setTimeout(() => { this.show = false; }, 100);
-    },
-    init() {
-      this.fetchKabupaten();
-      this.query = '{{ form.region_origin.value|default_if_none:"" }}';
-    }
+  function kabupatenSelect() {
+    return {
+      kabupatenList: [],
+      filteredKabupaten: [],
+      query: "",
+      show: false,
+      fetchKabupaten() {
+        fetch("https://api-regional-indonesia.vercel.app/api/cities/8")
+          .then((res) => res.json())
+          .then((data) => {
+            // Use the 'data' key from the API response
+            this.kabupatenList = (data.data || []).map((k) => k.name);
+          })
+          .catch((error) => {
+            console.error("Error fetching kabupaten data:", error);
+          });
+      },
+      searchKabupaten() {
+        if (!this.kabupatenList.length) return;
+        const q = this.query.toLowerCase();
+        this.filteredKabupaten = this.kabupatenList
+          .filter((kab) => kab.toLowerCase().includes(q))
+          .slice(0, 10);
+        this.show = !!this.filteredKabupaten.length;
+      },
+      selectKabupaten(kab) {
+        this.query = kab;
+        this.show = false;
+      },
+      hideList() {
+        setTimeout(() => {
+          this.show = false;
+        }, 100);
+      },
+      init() {
+        this.fetchKabupaten();
+        this.query = '{{ form.region_origin.value|default_if_none:"" }}';
+      },
+    };
   }
-}
 
-(function(){
-  const form = document.getElementById('student-create-form');
-  if(!form) return;
-  let dirty = false;
-  form.addEventListener('change', () => { dirty = true; });
-  window.addEventListener('beforeunload', function(e){
-    if(dirty && !form.dataset.submitted){
-      e.preventDefault();
-      e.returnValue = '';
-    }
-  });
-  form.addEventListener('submit', ()=>{ form.dataset.submitted = '1'; dirty = false; });
-})();
+  (function () {
+    const form = document.getElementById("student-create-form");
+    if (!form) return;
+    let dirty = false;
+    form.addEventListener("change", () => {
+      dirty = true;
+    });
+    window.addEventListener("beforeunload", function (e) {
+      if (dirty && !form.dataset.submitted) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    });
+    form.addEventListener("submit", () => {
+      form.dataset.submitted = "1";
+      dirty = false;
+    });
+  })();
 </script>
 {% endblock %}

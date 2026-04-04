@@ -1,5 +1,8 @@
+from datetime import timedelta
+
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.utils import timezone
 
 
 class District(models.Model):
@@ -377,3 +380,41 @@ class StudentInterest(models.Model):
     def __str__(self):
         label = self.custom_value if self.interest.allow_custom and self.custom_value else self.interest.name
         return f"{self.student} — {label}"
+
+
+class EmailVerification(models.Model):
+    EXPIRY_MINUTES = 30
+    RESEND_COOLDOWN_SECONDS = 60
+    MAX_ATTEMPTS = 5
+
+    user = models.OneToOneField(
+        get_user_model(),
+        on_delete=models.CASCADE,
+        related_name='email_verification',
+    )
+    code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    attempt_count = models.PositiveSmallIntegerField(default=0)
+    last_resend_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Verifikasi Email"
+        verbose_name_plural = "Verifikasi Email"
+
+    def is_expired(self):
+        return timezone.now() > self.expires_at
+
+    def can_resend(self):
+        if not self.last_resend_at:
+            return True
+        return timezone.now() - self.last_resend_at >= timedelta(seconds=self.RESEND_COOLDOWN_SECONDS)
+
+    def seconds_until_resend(self):
+        if not self.last_resend_at:
+            return 0
+        elapsed = (timezone.now() - self.last_resend_at).total_seconds()
+        return max(0, self.RESEND_COOLDOWN_SECONDS - int(elapsed))
+
+    def __str__(self):
+        return f"EmailVerification for {self.user.username}"

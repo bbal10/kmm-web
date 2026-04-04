@@ -1,6 +1,7 @@
 import csv
 import logging
 import secrets
+from datetime import timedelta
 
 from django.conf import settings
 from django.contrib import messages
@@ -14,6 +15,7 @@ from django.db import transaction
 from django.http import Http404, HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django.utils.http import urlencode
 from django.utils.text import slugify
@@ -27,11 +29,58 @@ from .forms import (
     StaffStudentForm,
     StaffStudentCreateForm,
 )
-from .models import Interest, InterestCategory, Student, StudentInterest
+from .models import EmailVerification, Interest, InterestCategory, Student, StudentInterest
 from .utils.logging_utils import security_logger, audit_logger, get_user_info, log_user_action
 
 # Configure logger with proper naming convention
 logger = logging.getLogger(__name__)
+
+User = get_user_model()
+
+
+def _generate_verification_code():
+    """Generate a secure 6-digit numeric verification code."""
+    return str(secrets.randbelow(1000000)).zfill(6)
+
+
+def _create_email_verification(user):
+    """Create (or refresh) an EmailVerification record for *user* and return it."""
+    expires_at = timezone.now() + timedelta(minutes=EmailVerification.EXPIRY_MINUTES)
+    code = _generate_verification_code()
+    verification, _ = EmailVerification.objects.update_or_create(
+        user=user,
+        defaults={
+            'code': code,
+            'expires_at': expires_at,
+            'attempt_count': 0,
+            'last_resend_at': timezone.now(),
+        },
+    )
+    return verification
+
+
+def _send_verification_email(user, code):
+    """Send an email verification code to *user*."""
+    subject = 'Verifikasi Email - KMM Mesir'
+    message = (
+        f"Halo {user.get_full_name() or user.username},\n\n"
+        f"Terima kasih telah mendaftar di KMM Mesir.\n\n"
+        f"Kode verifikasi email Anda adalah:\n\n"
+        f"    {code}\n\n"
+        f"Kode ini berlaku selama {EmailVerification.EXPIRY_MINUTES} menit.\n\n"
+        f"Jika Anda tidak mendaftar, abaikan email ini.\n\n"
+        f"Salam,\nTim KMM Mesir"
+    )
+    try:
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email],
+            fail_silently=False,
+        )
+    except Exception as exc:
+        logger.error("Failed to send verification email to %s: %s", user.email, exc)
 
 
 def _get_interest_categories_context():
@@ -243,7 +292,10 @@ def register(request):
             form = UserRegistrationForm(request.POST)
 
             if form.is_valid():
-                user = form.save()
+                user = form.save(commit=False)
+                # Deactivate until email is verified
+                user.is_active = False
+                user.save()
                 username = user.username
 
                 # Log successful registration
@@ -261,13 +313,20 @@ def register(request):
                     success=True
                 )
 
-                # Add success message for registration
-                messages.success(
+                # Create verification record and send email
+                verification = _create_email_verification(user)
+                _send_verification_email(user, verification.code)
+
+                # Store pending user in session for the verify-email view
+                request.session['pending_verification_user_id'] = user.id
+
+                messages.info(
                     request,
-                    f'Pendaftaran berhasil! Selamat datang {user.get_full_name() or username}. Silakan login dengan akun yang telah dibuat.'
+                    f'Pendaftaran berhasil! Kode verifikasi telah dikirim ke {user.email}. '
+                    f'Silakan cek email Anda.'
                 )
 
-                return redirect('data_management:login')
+                return redirect('data_management:verify_email')
             else:
                 # Log failed registration
                 audit_logger.log_user_registration(
@@ -326,6 +385,31 @@ def user_login(request):
 
                     return redirect('data_management:dashboard')
                 else:
+                    # Check if the user exists but is inactive (email not yet verified)
+                    try:
+                        inactive_user = User.objects.get(username=username, is_active=False)
+                        if inactive_user.check_password(password) and hasattr(inactive_user, 'email_verification'):
+                            # Re-use (or refresh) the pending verification session
+                            request.session['pending_verification_user_id'] = inactive_user.id
+                            security_logger.log_login_attempt(
+                                request=request,
+                                username=username,
+                                success=False,
+                                is_staff=False,
+                                additional_info="Email not verified"
+                            )
+                            messages.warning(
+                                request,
+                                'Akun Anda belum diverifikasi. Silakan cek email Anda untuk kode verifikasi.'
+                            )
+                            if request.htmx:
+                                response = HttpResponse()
+                                response['HX-Redirect'] = reverse_lazy('data_management:verify_email')
+                                return response
+                            return redirect('data_management:verify_email')
+                    except User.DoesNotExist:
+                        pass
+
                     # Log failed login
                     security_logger.log_login_attempt(
                         request=request,
@@ -353,6 +437,105 @@ def user_login(request):
         form = UserLoginForm()
 
     return render(request, 'login.html', {'form': form})
+
+
+def verify_email(request):
+    """Display the email verification page and handle code submission."""
+    user_id = request.session.get('pending_verification_user_id')
+    if not user_id:
+        return redirect('data_management:login')
+
+    user = get_object_or_404(User, id=user_id, is_active=False)
+
+    try:
+        verification = user.email_verification
+    except EmailVerification.DoesNotExist:
+        messages.error(request, 'Data verifikasi tidak ditemukan. Silakan daftar ulang.')
+        return redirect('data_management:register')
+
+    if request.method == 'POST':
+        code = request.POST.get('code', '').strip()
+
+        if verification.is_expired():
+            messages.error(
+                request,
+                'Kode verifikasi telah kedaluwarsa. Silakan kirim ulang kode.'
+            )
+        elif verification.attempt_count >= EmailVerification.MAX_ATTEMPTS:
+            messages.error(
+                request,
+                'Terlalu banyak percobaan kode yang salah. Silakan kirim ulang kode baru.'
+            )
+        elif code == verification.code:
+            # Activate user
+            user.is_active = True
+            user.save(update_fields=['is_active'])
+            verification.delete()
+            del request.session['pending_verification_user_id']
+
+            audit_logger.log_user_registration(
+                request=request,
+                username=user.username,
+                success=True,
+            )
+            logger.info("Email verified for user=%s", user.username)
+            messages.success(
+                request,
+                'Email berhasil diverifikasi! Silakan login dengan akun Anda.'
+            )
+            return redirect('data_management:login')
+        else:
+            verification.attempt_count += 1
+            verification.save(update_fields=['attempt_count'])
+            remaining = EmailVerification.MAX_ATTEMPTS - verification.attempt_count
+            messages.error(
+                request,
+                f'Kode verifikasi salah. Sisa percobaan: {remaining}.'
+                if remaining > 0
+                else 'Kode verifikasi salah. Tidak ada sisa percobaan. Silakan kirim ulang kode.'
+            )
+
+    context = {
+        'email': user.email,
+        'can_resend': verification.can_resend(),
+        'seconds_until_resend': verification.seconds_until_resend(),
+    }
+    return render(request, 'verify_email.html', context)
+
+
+def resend_verification_code(request):
+    """Resend a new verification code to the user's email."""
+    if request.method != 'POST':
+        return redirect('data_management:verify_email')
+
+    user_id = request.session.get('pending_verification_user_id')
+    if not user_id:
+        return redirect('data_management:login')
+
+    user = get_object_or_404(User, id=user_id, is_active=False)
+
+    try:
+        verification = user.email_verification
+    except EmailVerification.DoesNotExist:
+        messages.error(request, 'Data verifikasi tidak ditemukan. Silakan daftar ulang.')
+        return redirect('data_management:register')
+
+    if not verification.can_resend():
+        seconds = verification.seconds_until_resend()
+        messages.warning(
+            request,
+            f'Mohon tunggu {seconds} detik sebelum mengirim ulang kode.'
+        )
+        return redirect('data_management:verify_email')
+
+    verification = _create_email_verification(user)
+    _send_verification_email(user, verification.code)
+    logger.info("Resent verification code for user=%s", user.username)
+    messages.success(
+        request,
+        f'Kode verifikasi baru telah dikirim ke {user.email}.'
+    )
+    return redirect('data_management:verify_email')
 
 
 def staff_login(request):

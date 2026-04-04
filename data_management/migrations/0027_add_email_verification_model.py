@@ -13,31 +13,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name='student',
-            name='faculty',
-            field=models.CharField(blank=True, choices=[('dakwah', 'Dakwah Islamiyyah'), ('dirasat_insaniyyah', 'Dirasat Insaniyyah'), ('dirasat_banat', 'Dirasat Islamiyah wa Arabiyyah Banat'), ('dirasat_banin', 'Dirasat Islamiyah wa Arabiyyah Banin'), ('dirasat_ulya', 'Dirasat Ulya'), ('dirasat_ulum', 'Dirasat Ulum'), ('handasah', 'Handasah'), ('ilam', 'Ilam'), ('ilmu_quran', 'Ilmu Al-Quran'), ('kedokteran', 'Kedokteran'), ('lughah_arabiyyah', 'Lughah Arabiyyah'), ('syariah_qanun', 'Syariah wa Qanun'), ('tarbiyyah', 'Tarbiyyah'), ('tijarah', 'Tijarah'), ('ushuluddin', 'Ushuluddin'), ('other', 'Lainnya')], max_length=50, verbose_name='Fakultas'),
-        ),
-        migrations.AlterField(
-            model_name='student',
-            name='faculty_custom',
-            field=models.CharField(blank=True, max_length=200, verbose_name='Fakultas'),
-        ),
-        migrations.AlterField(
-            model_name='student',
-            name='institution',
-            field=models.CharField(blank=True, choices=[('al_azhar', 'Al-Azhar University'), ('mahad_al_azhar', "Ma'had Al Azhar"), ('markaz_zayed', 'Markaz Syeikh Zayed'), ('dirasah_khassah', 'Dirasah Khassah (Markaz Tatwir)'), ('other', 'Lainnya')], max_length=50, verbose_name='Institusi'),
-        ),
-        migrations.AlterField(
-            model_name='student',
-            name='institution_custom',
-            field=models.CharField(blank=True, max_length=200, verbose_name='Institusi'),
-        ),
-        migrations.AlterField(
-            model_name='student',
-            name='major_custom',
-            field=models.CharField(blank=True, max_length=200, verbose_name='Jurusan'),
-        ),
         migrations.CreateModel(
             name='EmailVerification',
             fields=[

@@ -1,4 +1,5 @@
 from unittest.mock import patch
+from datetime import timedelta
 from typing import cast
 
 from django.test import TestCase, override_settings
@@ -234,7 +235,7 @@ class TestEmailVerificationRegistration(TestCase):
         verification = EmailVerification.objects.get(user=user)
 
         # Expire the code by moving expires_at to the past
-        verification.expires_at = timezone.now() - timezone.timedelta(seconds=1)
+        verification.expires_at = timezone.now() - timedelta(seconds=1)
         verification.save()
 
         response = self.client.post(self.VERIFY_URL, {'code': verification.code})
@@ -258,11 +259,12 @@ class TestEmailVerificationRegistration(TestCase):
         verification.last_resend_at = None
         verification.save()
 
-        self.client.post(self.RESEND_URL)
+        response = self.client.post(self.RESEND_URL)
 
+        self.assertRedirects(response, self.VERIFY_URL)
         new_code = EmailVerification.objects.get(user=user).code
-        # Codes differ (with overwhelming probability)
         self.assertIsNotNone(new_code)
+        self.assertNotEqual(new_code, old_code)
 
     def test_resend_rate_limited(self):
         """Resend within the cooldown period must show a warning and not change the code."""

@@ -44,7 +44,13 @@ def _generate_verification_code():
 
 
 def _create_email_verification(user):
-    """Create (or refresh) an EmailVerification record for *user* and return it."""
+    """Create (or refresh) an EmailVerification record for *user* and return it.
+
+    Note: ``last_resend_at`` is intentionally left as ``None`` here. Callers
+    must update it to ``timezone.now()`` only *after* the verification email
+    has been sent successfully, so that a failed send does not start the
+    resend cooldown.
+    """
     expires_at = timezone.now() + timedelta(minutes=EmailVerification.EXPIRY_MINUTES)
     code = _generate_verification_code()
     verification, _ = EmailVerification.objects.update_or_create(
@@ -53,14 +59,18 @@ def _create_email_verification(user):
             'code': code,
             'expires_at': expires_at,
             'attempt_count': 0,
-            'last_resend_at': timezone.now(),
+            'last_resend_at': None,
         },
     )
     return verification
 
 
 def _send_verification_email(user, code):
-    """Send an email verification code to *user*."""
+    """Send an email verification code to *user*.
+
+    Returns ``True`` on success, ``False`` on failure (the error is logged but
+    *not* re-raised so the view can show a friendly message instead of a 500).
+    """
     subject = 'Verifikasi Email - KMM Mesir'
     message = (
         f"Halo {user.get_full_name() or user.username},\n\n"
@@ -79,8 +89,10 @@ def _send_verification_email(user, code):
             [user.email],
             fail_silently=False,
         )
+        return True
     except Exception as exc:
         logger.error("Failed to send verification email to %s: %s", user.email, exc)
+        return False
 
 
 def _get_interest_categories_context():
@@ -315,16 +327,26 @@ def register(request):
 
                 # Create verification record and send email
                 verification = _create_email_verification(user)
-                _send_verification_email(user, verification.code)
+                email_sent = _send_verification_email(user, verification.code)
+                if email_sent:
+                    verification.last_resend_at = timezone.now()
+                    verification.save(update_fields=['last_resend_at'])
 
                 # Store pending user in session for the verify-email view
                 request.session['pending_verification_user_id'] = user.id
 
-                messages.info(
-                    request,
-                    f'Pendaftaran berhasil! Kode verifikasi telah dikirim ke {user.email}. '
-                    f'Silakan cek email Anda.'
-                )
+                if email_sent:
+                    messages.info(
+                        request,
+                        f'Pendaftaran berhasil! Kode verifikasi telah dikirim ke {user.email}. '
+                        f'Silakan cek email Anda.'
+                    )
+                else:
+                    messages.warning(
+                        request,
+                        f'Pendaftaran berhasil, namun gagal mengirim email ke {user.email}. '
+                        f'Gunakan tombol "Kirim Ulang" untuk mencoba lagi.'
+                    )
 
                 return redirect('data_management:verify_email')
             else:
@@ -445,7 +467,14 @@ def verify_email(request):
     if not user_id:
         return redirect('data_management:login')
 
-    user = get_object_or_404(User, id=user_id, is_active=False)
+    user = User.objects.filter(id=user_id, is_active=False).first()
+    if user is None:
+        request.session.pop('pending_verification_user_id', None)
+        messages.info(
+            request,
+            'Verifikasi email tidak lagi diperlukan. Silakan login dengan akun Anda.'
+        )
+        return redirect('data_management:login')
 
     try:
         verification = user.email_verification
@@ -512,7 +541,14 @@ def resend_verification_code(request):
     if not user_id:
         return redirect('data_management:login')
 
-    user = get_object_or_404(User, id=user_id, is_active=False)
+    user = User.objects.filter(id=user_id, is_active=False).first()
+    if user is None:
+        request.session.pop('pending_verification_user_id', None)
+        messages.info(
+            request,
+            'Verifikasi email tidak lagi diperlukan. Silakan login dengan akun Anda.'
+        )
+        return redirect('data_management:login')
 
     try:
         verification = user.email_verification
@@ -529,12 +565,20 @@ def resend_verification_code(request):
         return redirect('data_management:verify_email')
 
     verification = _create_email_verification(user)
-    _send_verification_email(user, verification.code)
-    logger.info("Resent verification code for user=%s", user.username)
-    messages.success(
-        request,
-        f'Kode verifikasi baru telah dikirim ke {user.email}.'
-    )
+    email_sent = _send_verification_email(user, verification.code)
+    if email_sent:
+        verification.last_resend_at = timezone.now()
+        verification.save(update_fields=['last_resend_at'])
+        logger.info("Resent verification code for user=%s", user.username)
+        messages.success(
+            request,
+            f'Kode verifikasi baru telah dikirim ke {user.email}.'
+        )
+    else:
+        messages.error(
+            request,
+            f'Gagal mengirim email ke {user.email}. Silakan coba lagi.'
+        )
     return redirect('data_management:verify_email')
 
 

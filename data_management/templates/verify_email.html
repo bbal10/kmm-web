@@ -137,23 +137,3 @@
     </style>
 {% endblock extra_css %}
 
-{% block extra_js %}
-    {% if not can_resend and seconds_until_resend > 0 %}
-    <script>
-        (function () {
-            var countdown = parseInt("{{ seconds_until_resend }}", 10);
-            var el = document.getElementById("resend-countdown");
-            if (!el || countdown <= 0) return;
-            var timer = setInterval(function () {
-                countdown -= 1;
-                if (countdown <= 0) {
-                    clearInterval(timer);
-                    location.reload();
-                } else {
-                    el.textContent = countdown;
-                }
-            }, 1000);
-        })();
-    </script>
-    {% endif %}
-{% endblock extra_js %}

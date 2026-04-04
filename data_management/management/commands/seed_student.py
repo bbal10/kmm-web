@@ -3,6 +3,7 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 from faker import Faker
 from data_management.models import Student
+from data_management.forms import get_region_origin_choices
 
 import secrets
 import string
@@ -29,6 +30,7 @@ class Command(BaseCommand):
         levels = ['maba', 'regular', 'alumni']
         disease_statuses = ['sembuh', 'belum']
         education_fundings = ['beasiswa', 'non-beasiswa'] # HAPUS jika tidak ada field ini
+        region_origin_choices = [value for value, _ in get_region_origin_choices()]
 
         total_created = 0
         total_updated = 0
@@ -63,9 +65,8 @@ class Command(BaseCommand):
                 'gender': random.choice(genders),
                 'arrival_date': fake.date_this_decade(),
                 'school_origin': fake.company(),
-                'citizenship_status': random.choice(['WNI', 'WNA']),
                 'marital_status': random.choice(marital_statuses),
-                'region_origin': fake.city(),
+                'region_origin': random.choice(region_origin_choices) if region_origin_choices else fake.city(),
                 'whatsapp_number': fake.unique.phone_number(),
                 'email': student_email,
                 'institution': fake.company(),

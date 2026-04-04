@@ -145,7 +145,7 @@ class StudentDataUpdateView(LoginRequiredMixin, UpdateView):
     model = Student
     template_name = 'dashboard/student_data/student_data_form.html'
     form_class = StudentForm
-    success_url = reverse_lazy('profile')
+    success_url = reverse_lazy('data_management:profile')
 
     def dispatch(self, request, *args, **kwargs):
         """Override dispatch to add logging."""
@@ -169,7 +169,7 @@ class StudentDataUpdateView(LoginRequiredMixin, UpdateView):
         ctx.update({
             'basic_fields': [
                 'whatsapp_number', 'birth_place', 'birth_date', 'gender',
-                'marital_status', 'membership_status', 'citizenship_status', 'region_origin',
+                'marital_status', 'membership_status', 'region_origin',
                 'parents_name', 'parents_phone'
             ],
             'academic_fields': [
@@ -580,7 +580,7 @@ class StaffStudentUpdateView(LoginRequiredMixin, UpdateView):
         ctx.update({
             'basic_fields': [
                 'email', 'first_name', 'last_name', 'whatsapp_number', 'birth_place', 'birth_date', 'gender',
-                'marital_status', 'membership_status', 'citizenship_status', 'region_origin',
+                'marital_status', 'membership_status', 'region_origin',
                 'parents_name', 'parents_phone'
             ],
             'academic_fields': [
@@ -648,15 +648,15 @@ class StaffStudentUpdateView(LoginRequiredMixin, UpdateView):
     def get_success_url(self):
         action = self.request.POST.get('action') or self.request.GET.get('action')
         if action == 'save_back':
-            return self.request.POST.get('next') or self.request.GET.get('next') or reverse_lazy('staff_student_list')
+            return self.request.POST.get('next') or self.request.GET.get('next') or reverse_lazy('data_management:staff_student_list')
         # For draft remain on edit page
         if action == 'save_draft':
-            return reverse_lazy('staff_student_edit', kwargs={'pk': self.object.pk})
+            return reverse_lazy('data_management:staff_student_edit', kwargs={'pk': self.object.pk})
         # Default behavior
         next_param = self.request.GET.get('next') or self.request.POST.get('next')
         if next_param:
             return next_param
-        return reverse_lazy('staff_student_detail', kwargs={'pk': self.object.pk})
+        return reverse_lazy('data_management:staff_student_detail', kwargs={'pk': self.object.pk})
 
 
 class StaffStudentCreateView(LoginRequiredMixin, CreateView):
@@ -689,7 +689,7 @@ class StaffStudentCreateView(LoginRequiredMixin, CreateView):
         ctx.update({
             'basic_fields': [
                 'email', 'first_name', 'last_name', 'whatsapp_number', 'birth_place', 'birth_date', 'gender',
-                'marital_status', 'membership_status', 'citizenship_status', 'region_origin',
+                'marital_status', 'membership_status', 'region_origin',
                 'parents_name', 'parents_phone'
             ],
             'academic_fields': [
@@ -833,18 +833,18 @@ class StaffStudentCreateView(LoginRequiredMixin, CreateView):
     def get_success_url(self):
         action = self.request.POST.get('action') or self.request.GET.get('action')
         if action == 'save_back':
-            url = self.request.POST.get('next') or self.request.GET.get('next') or reverse_lazy('staff_student_list')
+            url = self.request.POST.get('next') or self.request.GET.get('next') or reverse_lazy('data_management:staff_student_list')
             logger.info("[StaffStudentCreateView] get_success_url action=save_back url=%s", url)
             return url
         if action == 'save_draft':
-            url = reverse_lazy('staff_student_edit', kwargs={'pk': self.object.pk})
+            url = reverse_lazy('data_management:staff_student_edit', kwargs={'pk': self.object.pk})
             logger.info("[StaffStudentCreateView] get_success_url action=save_draft url=%s", url)
             return url
         next_param = self.request.GET.get('next') or self.request.POST.get('next')
         if next_param:
             logger.info("[StaffStudentCreateView] get_success_url next_param=%s", next_param)
             return next_param
-        url = reverse_lazy('staff_student_detail', kwargs={'pk': self.object.pk})
+        url = reverse_lazy('data_management:staff_student_detail', kwargs={'pk': self.object.pk})
         logger.info("[StaffStudentCreateView] get_success_url default detail url=%s", url)
         return url
 
@@ -863,8 +863,9 @@ def export_students_csv(request):
     from django.db.models import Q
     if q:
         qs = qs.filter(
-            Q(full_name__icontains=q) |
-            Q(email__icontains=q) |
+            Q(user__first_name__icontains=q) |
+            Q(user__last_name__icontains=q) |
+            Q(user__email__icontains=q) |
             Q(passport_number__icontains=q) |
             Q(nik__icontains=q) |
             Q(faculty__icontains=q) |
@@ -951,7 +952,7 @@ class StaffStudentDeleteView(LoginRequiredMixin, DeleteView):
     model = Student
     template_name = 'dashboard/staff/staff_student_confirm_delete.html'
     context_object_name = 'student'
-    success_url = reverse_lazy('staff_student_list')
+    success_url = reverse_lazy('data_management:staff_student_list')
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_staff:

@@ -1,7 +1,18 @@
-{% extends 'base.html' %} {% load static %} {% load split_url %} {% block title
-%} Edit Profil Mahasiswa - KMM Mesir {% endblock %} {% block navbar %} {%
-include 'navbar.html' %} {% endblock %} {% block sidebar %}{% include
-'sidebar.html' %}{% endblock %} {% block content %}
+{% extends 'base.html' %}
+{% load static %}
+{% load split_url %}
+
+{% block title %}Edit Profil Mahasiswa - KMM Mesir{% endblock %}
+
+{% block navbar %}
+{% include 'navbar.html' %}
+{% endblock %}
+
+{% block sidebar %}
+{% include 'sidebar.html' %}
+{% endblock %}
+
+{% block content %}
 <div class="w-full p-6 space-y-6" x-data="{ submitting:false }">
   <div class="flex items-center justify-between flex-wrap gap-4">
     <div>
@@ -63,63 +74,27 @@ include 'navbar.html' %} {% endblock %} {% block sidebar %}{% include
     <div class="space-y-4">
       <h2 class="text-lg font-semibold text-gray-800">Identitas Dasar</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-        {% for field_name in basic_fields %} {% with f=form|get_field:field_name
-        %}
-        <div
-          {%
-          if
-          field_name=""
-          ="region_origin"
-          %}x-data="kabupatenSelect()"
-          {%
-          endif
-          %}
-        >
-          <label class="block text-gray-600 mb-1 text-xs font-medium"
-            >{{ f.label }}</label
-          >
+        {% for field_name in basic_fields %}
+        {% with f=form|get_field:field_name %}
+        <div>
+          <label class="block text-gray-600 mb-1 text-xs font-medium">{{ f.label }}</label>
 
-          {% if field_name == 'whatsapp_number' %} {{ f }}
+          {% if field_name == 'whatsapp_number' %}
+          {{ f }}
           <p class="text-[11px] text-gray-500 mt-1">
             Gunakan format internasional. Ketik kode negara (contoh: +62, +20)
             untuk melihat daftar.
           </p>
-          {% elif field_name == 'region_origin' %}
-          <!-- Custom autocomplete for region_origin -->
-          <div class="relative">
-            <input
-              type="text"
-              name="{{ f.name }}"
-              name="{{ f.name }}"
-              x-model="query"
-              x-on:input="searchKabupaten()"
-              x-on:focus="show = !!filteredKabupaten.length"
-              x-on:blur="hideList()"
-              placeholder="Ketik nama kabupaten/kota..."
-              class="mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm"
-              autocomplete="off"
-            />
+          {% else %}
+          {{ f }}
+          {% endif %}
 
-            <!-- Dropdown list -->
-            <div
-              x-show="show && filteredKabupaten.length"
-              x-transition
-              class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto"
-            >
-              <template x-for="kab in filteredKabupaten" :key="kab">
-                <div
-                  x-text="kab"
-                  x-on:click="selectKabupaten(kab)"
-                  class="px-3 py-2 cursor-pointer hover:bg-blue-50 border-b border-gray-100 last:border-b-0"
-                ></div>
-              </template>
-            </div>
-          </div>
-          {% else %} {{ f }} {% endif %} {% if f.errors %}
+          {% if f.errors %}
           <p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>
           {% endif %}
         </div>
-        {% endwith %} {% endfor %}
+        {% endwith %}
+        {% endfor %}
       </div>
     </div>
 
@@ -127,65 +102,65 @@ include 'navbar.html' %} {% endblock %} {% block sidebar %}{% include
     <div class="space-y-4">
       <h2 class="text-lg font-semibold text-gray-800">Akademik</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-        {% for field_name in academic_fields %} {% if field_name ==
-        'institution_custom' or field_name == 'faculty_custom' or field_name ==
-        'major_custom' %} {# Custom fields rendered inline with their parent #}
-        {% else %} {% with f=form|get_field:field_name %} {% if field_name ==
-        'institution' or field_name == 'faculty' or field_name == 'major' %}
-        <div
-          x-data="{ showCustom: $el.querySelector('select').value === 'other' }"
-        >
-          <label class="block text-gray-600 mb-1 text-xs font-medium"
-            >{{ f.label }}</label
-          >
+        {% for field_name in academic_fields %}
+        {% if field_name == 'institution_custom' or field_name == 'faculty_custom' or field_name == 'major_custom' %}
+        {# Custom fields rendered inline with their parent #}
+        {% else %}
+        {% with f=form|get_field:field_name %}
+        {% if field_name == 'institution' or field_name == 'faculty' or field_name == 'major' %}
+        <div x-data="{ showCustom: $el.querySelector('select').value === 'other' }">
+          <label class="block text-gray-600 mb-1 text-xs font-medium">{{ f.label }}</label>
           <div x-on:change="showCustom = $event.target.value === 'other'">
             {{ f }}
           </div>
           {% if f.errors %}
           <p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>
-          {% endif %} {% with cf=form|get_field:field_name|add:"_custom" %} {%
-          endwith %} {% if field_name == 'institution' %} {% with
-          cf=form|get_field:"institution_custom" %}
+          {% endif %}
+
+          {% if field_name == 'institution' %}
+          {% with cf=form|get_field:"institution_custom" %}
           <div x-show="showCustom" x-cloak class="mt-2">
-            <label class="block text-gray-600 mb-1 text-xs font-medium"
-              >{{ cf.label }} (Isi Sendiri)</label
-            >
-            {{ cf }} {% if cf.errors %}
+            <label class="block text-gray-600 mb-1 text-xs font-medium">{{ cf.label }} (Isi Sendiri)</label>
+            {{ cf }}
+            {% if cf.errors %}
             <p class="text-xs text-red-600 mt-1">{{ cf.errors.0 }}</p>
             {% endif %}
           </div>
-          {% endwith %} {% elif field_name == 'faculty' %} {% with
-          cf=form|get_field:"faculty_custom" %}
+          {% endwith %}
+          {% elif field_name == 'faculty' %}
+          {% with cf=form|get_field:"faculty_custom" %}
           <div x-show="showCustom" x-cloak class="mt-2">
-            <label class="block text-gray-600 mb-1 text-xs font-medium"
-              >{{ cf.label }} (Isi Sendiri)</label
-            >
-            {{ cf }} {% if cf.errors %}
+            <label class="block text-gray-600 mb-1 text-xs font-medium">{{ cf.label }} (Isi Sendiri)</label>
+            {{ cf }}
+            {% if cf.errors %}
             <p class="text-xs text-red-600 mt-1">{{ cf.errors.0 }}</p>
             {% endif %}
           </div>
-          {% endwith %} {% elif field_name == 'major' %} {% with
-          cf=form|get_field:"major_custom" %}
+          {% endwith %}
+          {% elif field_name == 'major' %}
+          {% with cf=form|get_field:"major_custom" %}
           <div x-show="showCustom" x-cloak class="mt-2">
-            <label class="block text-gray-600 mb-1 text-xs font-medium"
-              >{{ cf.label }} (Isi Sendiri)</label
-            >
-            {{ cf }} {% if cf.errors %}
+            <label class="block text-gray-600 mb-1 text-xs font-medium">{{ cf.label }} (Isi Sendiri)</label>
+            {{ cf }}
+            {% if cf.errors %}
             <p class="text-xs text-red-600 mt-1">{{ cf.errors.0 }}</p>
             {% endif %}
           </div>
-          {% endwith %} {% endif %}
+          {% endwith %}
+          {% endif %}
         </div>
         {% else %}
         <div>
-          <label class="block text-gray-600 mb-1 text-xs font-medium"
-            >{{ f.label }}</label
-          >
-          {{ f }} {% if f.errors %}
+          <label class="block text-gray-600 mb-1 text-xs font-medium">{{ f.label }}</label>
+          {{ f }}
+          {% if f.errors %}
           <p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>
           {% endif %}
         </div>
-        {% endif %} {% endwith %} {% endif %} {% endfor %}
+        {% endif %}
+        {% endwith %}
+        {% endif %}
+        {% endfor %}
       </div>
     </div>
 
@@ -193,17 +168,17 @@ include 'navbar.html' %} {% endblock %} {% block sidebar %}{% include
     <div class="space-y-4">
       <h2 class="text-lg font-semibold text-gray-800">Identitas Tambahan</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-        {% for field_name in identity_extra_fields %} {% with
-        f=form|get_field:field_name %}
+        {% for field_name in identity_extra_fields %}
+        {% with f=form|get_field:field_name %}
         <div>
-          <label class="block text-gray-600 mb-1 text-xs font-medium"
-            >{{ f.label }}</label
-          >
-          {{ f }} {% if f.errors %}
+          <label class="block text-gray-600 mb-1 text-xs font-medium">{{ f.label }}</label>
+          {{ f }}
+          {% if f.errors %}
           <p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>
           {% endif %}
         </div>
-        {% endwith %} {% endfor %}
+        {% endwith %}
+        {% endfor %}
       </div>
     </div>
 
@@ -211,17 +186,17 @@ include 'navbar.html' %} {% endblock %} {% block sidebar %}{% include
     <div class="space-y-4">
       <h2 class="text-lg font-semibold text-gray-800">Kesehatan</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-        {% for field_name in health_fields %} {% with
-        f=form|get_field:field_name %}
+        {% for field_name in health_fields %}
+        {% with f=form|get_field:field_name %}
         <div>
-          <label class="block text-gray-600 mb-1 text-xs font-medium"
-            >{{ f.label }}</label
-          >
-          {{ f }} {% if f and f.errors %}
+          <label class="block text-gray-600 mb-1 text-xs font-medium">{{ f.label }}</label>
+          {{ f }}
+          {% if f and f.errors %}
           <p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>
           {% endif %}
         </div>
-        {% endwith %} {% endfor %}
+        {% endwith %}
+        {% endfor %}
       </div>
     </div>
 
@@ -277,17 +252,17 @@ include 'navbar.html' %} {% endblock %} {% block sidebar %}{% include
     <div class="space-y-4">
       <h2 class="text-lg font-semibold text-gray-800">Informasi Wali/Umdah</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-        {% for field_name in guardian_fields %} {% with
-        f=form|get_field:field_name %}
+        {% for field_name in guardian_fields %}
+        {% with f=form|get_field:field_name %}
         <div>
-          <label class="block text-gray-600 mb-1 text-xs font-medium"
-            >{{ f.label }}</label
-          >
-          {{ f }} {% if f.errors %}
+          <label class="block text-gray-600 mb-1 text-xs font-medium">{{ f.label }}</label>
+          {{ f }}
+          {% if f.errors %}
           <p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>
           {% endif %}
         </div>
-        {% endwith %} {% endfor %}
+        {% endwith %}
+        {% endfor %}
       </div>
     </div>
 
@@ -295,17 +270,17 @@ include 'navbar.html' %} {% endblock %} {% block sidebar %}{% include
     <div class="space-y-4">
       <h2 class="text-lg font-semibold text-gray-800">Informasi Keuangan</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-        {% for field_name in financial_fields %} {% with
-        f=form|get_field:field_name %}
+        {% for field_name in financial_fields %}
+        {% with f=form|get_field:field_name %}
         <div>
-          <label class="block text-gray-600 mb-1 text-xs font-medium"
-            >{{ f.label }}</label
-          >
-          {{ f }} {% if f.errors %}
+          <label class="block text-gray-600 mb-1 text-xs font-medium">{{ f.label }}</label>
+          {{ f }}
+          {% if f.errors %}
           <p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>
           {% endif %}
         </div>
-        {% endwith %} {% endfor %}
+        {% endwith %}
+        {% endfor %}
       </div>
     </div>
 
@@ -347,67 +322,6 @@ include 'navbar.html' %} {% endblock %} {% block sidebar %}{% include
 </div>
 
 <script>
-  function kabupatenSelect() {
-    return {
-      kabupatenList: [],
-      filteredKabupaten: [],
-      query: "",
-      show: false,
-      isLoading: false,
-      selectedValue: "",
-      selectedIndex: 0,
-      isValidSelection: true,
-      fetchKabupaten() {
-        this.isLoading = true;
-        fetch("https://api-regional-indonesia.vercel.app/api/cities/8")
-          .then((res) => res.json())
-          .then((data) => {
-            // Use the 'data' key from the API response
-            this.kabupatenList = (data.data || []).map((k) => k.name);
-          })
-          .catch((error) => {
-            console.error("Error fetching kabupaten data:", error);
-          })
-          .finally(() => {
-            this.isLoading = false;
-          });
-      },
-      searchKabupaten() {
-        if (!this.kabupatenList.length) return;
-        const q = this.query.toLowerCase();
-        this.filteredKabupaten = this.kabupatenList
-          .filter((kab) => kab.toLowerCase().includes(q))
-          .slice(0, 10);
-        this.show = !!this.filteredKabupaten.length;
-        this.isValidSelection = this.filteredKabupaten.includes(this.query);
-      },
-      selectKabupaten(kab) {
-        this.query = kab;
-        this.selectedValue = kab;
-        this.show = false;
-        this.isValidSelection = true;
-      },
-      clearAndHide() {
-        this.query = "";
-        this.show = false;
-        this.isValidSelection = true;
-      },
-      selectFirstMatch() {
-        if (this.filteredKabupaten.length === 1) {
-          this.selectKabupaten(this.filteredKabupaten[0]);
-        }
-      },
-      hideList() {
-        setTimeout(() => {
-          this.show = false;
-        }, 100);
-      },
-      init() {
-        this.fetchKabupaten();
-        this.query = '{{ form.region_origin.value|default_if_none:"" }}';
-      },
-    };
-  }
 
   (function () {
     const form = document.getElementById("student-profile-form");

@@ -54,16 +54,7 @@ block content %}
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
         {% for field_name in basic_fields %} {% with f=form|get_field:field_name
         %}
-        <div
-          {%
-          if
-          field_name=""
-          ="region_origin"
-          %}x-data="kabupatenSelect()"
-          {%
-          endif
-          %}
-        >
+        <div>
           <label class="block text-gray-600 mb-1 text-xs font-medium"
             >{{ f.label }}</label
           >
@@ -73,36 +64,6 @@ block content %}
             Gunakan format internasional. Ketik kode negara (contoh: +62, +20)
             untuk melihat daftar.
           </p>
-          {% elif field_name == 'region_origin' %}
-          <!-- Custom autocomplete for region_origin -->
-          <div class="relative">
-            <input
-              type="text"
-              name="{{ f.name }}"
-              x-model="query"
-              x-on:input="searchKabupaten()"
-              x-on:focus="show = !!filteredKabupaten.length"
-              x-on:blur="hideList()"
-              placeholder="Ketik nama kabupaten/kota..."
-              class="mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm"
-              autocomplete="off"
-            />
-
-            <!-- Dropdown list -->
-            <div
-              x-show="show && filteredKabupaten.length"
-              x-transition
-              class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto"
-            >
-              <template x-for="kab in filteredKabupaten" :key="kab">
-                <div
-                  x-text="kab"
-                  x-on:click="selectKabupaten(kab)"
-                  class="px-3 py-2 cursor-pointer hover:bg-blue-50 border-b border-gray-100 last:border-b-0"
-                ></div>
-              </template>
-            </div>
-          </div>
           {% else %} {{ f }} {% endif %} {% if f.errors %}
           <p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>
           {% endif %}
@@ -331,46 +292,6 @@ block content %}
 </div>
 
 <script>
-  function kabupatenSelect() {
-    return {
-      kabupatenList: [],
-      filteredKabupaten: [],
-      query: "",
-      show: false,
-      fetchKabupaten() {
-        fetch("https://api-regional-indonesia.vercel.app/api/cities/8")
-          .then((res) => res.json())
-          .then((data) => {
-            // Use the 'data' key from the API response
-            this.kabupatenList = (data.data || []).map((k) => k.name);
-          })
-          .catch((error) => {
-            console.error("Error fetching kabupaten data:", error);
-          });
-      },
-      searchKabupaten() {
-        if (!this.kabupatenList.length) return;
-        const q = this.query.toLowerCase();
-        this.filteredKabupaten = this.kabupatenList
-          .filter((kab) => kab.toLowerCase().includes(q))
-          .slice(0, 10);
-        this.show = !!this.filteredKabupaten.length;
-      },
-      selectKabupaten(kab) {
-        this.query = kab;
-        this.show = false;
-      },
-      hideList() {
-        setTimeout(() => {
-          this.show = false;
-        }, 100);
-      },
-      init() {
-        this.fetchKabupaten();
-        this.query = '{{ form.region_origin.value|default_if_none:"" }}';
-      },
-    };
-  }
 
   (function () {
     const form = document.getElementById("student-create-form");

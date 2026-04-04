@@ -1,5 +1,3 @@
-import uuid
-
 from django.contrib.auth import get_user_model
 from django.db import models
 
@@ -171,12 +169,11 @@ class Student(models.Model):
     school_origin = models.ForeignKey(
         SchoolOrigin, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Asal Sekolah"
     )
-    citizenship_status = models.CharField(max_length=50, blank=True)
     marital_status = models.CharField(max_length=20, choices=MARITAL_STATUS_CHOICES, db_index=True)
     membership_status = models.CharField(
         max_length=20, choices=MEMBERSHIP_STATUS_CHOICES, blank=True, verbose_name="Status Keanggotaan"
     )
-    region_origin = models.CharField(max_length=80, blank=True)
+    region_origin = models.CharField(max_length=150, blank=True, verbose_name="Kabupaten/Kota Asal")
     whatsapp_number = models.CharField(max_length=20, blank=True)
     institution = models.CharField(max_length=50, choices=INSTITUTION_CHOICES, blank=True, verbose_name="Institusi")
     institution_custom = models.CharField(max_length=200, blank=True, verbose_name="Institusi")

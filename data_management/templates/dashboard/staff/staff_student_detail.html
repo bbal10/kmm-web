@@ -85,10 +85,6 @@
                     <p class="font-medium">{{ student.birth_place|default:'-' }}, {{ student.birth_date|date:'d M Y'|default:'-' }}</p>
                 </div>
                 <div>
-                    <p class="text-gray-500">Kewarganegaraan</p>
-                    <p class="font-medium">{{ student.citizenship_status|default:'-' }}</p>
-                </div>
-                <div>
                     <p class="text-gray-500">Wilayah Asal</p>
                     <p class="font-medium">{{ student.region_origin|default:'-' }}</p>
                 </div>

@@ -77,7 +77,7 @@ class Command(BaseCommand):
         expected_fields = [
             'email', 'full_name', 'passport_number', 'nik', 'lapdik_number',
             'birth_place', 'birth_date', 'gender', 'arrival_date', 'school_origin',
-            'citizenship_status', 'marital_status', 'region_origin',
+            'marital_status', 'region_origin',
             'whatsapp_number', 'institution', 'faculty', 'major',
             'degree_level', 'semester_level', 'latest_grade', 'home_name',
             'home_location', 'parents_name', 'parents_phone', 'guardian_name',

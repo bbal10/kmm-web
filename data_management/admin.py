@@ -10,7 +10,7 @@ class StudentAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Personal Info', {
             'fields': ('user', 'whatsapp_number', 'gender', 'birth_place', 'birth_date', 'marital_status',
-                       'membership_status', 'citizenship_status', 'region_origin')
+                       'membership_status', 'region_origin')
         }),
         ('Academic Info', {
             'fields': ('level', 'institution', 'institution_custom', 'faculty', 'faculty_custom',

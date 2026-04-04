@@ -6,6 +6,8 @@ from . import views
 app_name = 'data_management'
 urlpatterns = [
     path('register/', views.register, name='register'),
+    path('verify-email/', views.verify_email, name='verify_email'),
+    path('verify-email/resend/', views.resend_verification_code, name='resend_verification_code'),
     path("reset-password/", views.password_reset_request, name='password_reset'),
     path("reset-password/done/", auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
     path("reset-password/confirm/<uidb64>/<token>/", views.password_reset_confirm, name='password_reset_confirm'),

@@ -14,6 +14,7 @@ kmm_web_backend/settings/
 ├── static.py            # Static files dan media files
 ├── logging.py           # Konfigurasi logging
 ├── local.py             # Development settings
+├── staging.py           # Staging/testing settings
 └── production.py        # Production settings
 ```
 
@@ -29,6 +30,15 @@ python manage.py runserver
 
 # Atau explicitly set ke local
 export DJANGO_ENV=local
+python manage.py runserver
+```
+
+### Staging (Testing Environment)
+
+Untuk staging/testing sebelum production:
+
+```bash
+export DJANGO_ENV=staging
 python manage.py runserver
 ```
 

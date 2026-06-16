@@ -45,7 +45,6 @@ class TestStaffStudentCreation(TestCase):
             'semester_level': '4',
             'latest_grade': '',
             'passport_number': '',
-            'nik': '',
             'lapdik_number': '',
             'arrival_date': '',
             'school_origin': '',

@@ -58,7 +58,6 @@ class Command(BaseCommand):
             student_defaults = {
                 'full_name': fake.name(),
                 'passport_number': fake.unique.bothify(text='##########'),
-                'nik': fake.unique.bothify(text='################'),
                 'lapdik_number': fake.unique.bothify(text='LPDK#######'),
                 'birth_place': fake.city(),
                 'birth_date': fake.date_of_birth(minimum_age=17, maximum_age=30),

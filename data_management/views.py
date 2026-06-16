@@ -238,7 +238,7 @@ class StudentDataUpdateView(LoginRequiredMixin, UpdateView):
                 'major', 'major_custom', 'degree_level', 'semester_level', 'latest_grade', 'level'
             ],
             'identity_extra_fields': [
-                'passport_number', 'nik', 'lapdik_number', 'arrival_date', 'school_origin',
+                'passport_number', 'lapdik_number', 'arrival_date', 'school_origin',
                 'home_name', 'home_location'
             ],
             'guardian_fields': ['photo_url', 'guardian_name', 'guardian_phone'],
@@ -702,7 +702,6 @@ class StaffDashboardDataListView(LoginRequiredMixin, ListView):
                 Q(user__last_name__icontains=q) |
                 Q(user__email__icontains=q) |
                 Q(passport_number__icontains=q) |
-                Q(nik__icontains=q) |
                 Q(faculty__icontains=q) |
                 Q(major__icontains=q)
             )
@@ -815,7 +814,7 @@ class StaffStudentUpdateView(LoginRequiredMixin, UpdateView):
                 'major', 'major_custom', 'degree_level', 'semester_level', 'latest_grade', 'level'
             ],
             'identity_extra_fields': [
-                'passport_number', 'nik', 'lapdik_number', 'arrival_date', 'school_origin', 'home_name', 'home_location'
+                'passport_number', 'lapdik_number', 'arrival_date', 'school_origin', 'home_name', 'home_location'
             ],
             'health_fields': ['disease_history', 'disease_status'],
             'interest_categories': _get_interest_categories_context(),
@@ -924,7 +923,7 @@ class StaffStudentCreateView(LoginRequiredMixin, CreateView):
                 'major', 'major_custom', 'degree_level', 'semester_level', 'latest_grade', 'level'
             ],
             'identity_extra_fields': [
-                'passport_number', 'nik', 'lapdik_number', 'arrival_date', 'school_origin', 'home_name', 'home_location'
+                'passport_number', 'lapdik_number', 'arrival_date', 'school_origin', 'home_name', 'home_location'
             ],
             'health_fields': ['disease_history', 'disease_status'],
             'interest_categories': _get_interest_categories_context(),
@@ -1094,7 +1093,6 @@ def export_students_csv(request):
             Q(user__last_name__icontains=q) |
             Q(user__email__icontains=q) |
             Q(passport_number__icontains=q) |
-            Q(nik__icontains=q) |
             Q(faculty__icontains=q) |
             Q(major__icontains=q)
         )
@@ -1110,13 +1108,12 @@ def export_students_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="students.csv"'
     writer = csv.writer(response)
-    writer.writerow(['Full Name', 'Email', 'Passport', 'NIK', 'Degree', 'Tingkat', 'Faculty', 'Major', 'Level', 'Membership'])
+    writer.writerow(['Full Name', 'Email', 'Passport', 'Degree', 'Tingkat', 'Faculty', 'Major', 'Level', 'Membership'])
     for s in qs.iterator():
         writer.writerow([
             s.full_name,
             s.email,
             s.passport_number or '',
-            s.nik or '',
             s.degree_level,
             s.get_semester_level_display() if s.semester_level else '',
             s.faculty_display,

@@ -369,8 +369,6 @@ class StudentForm(forms.ModelForm):
             # Identity fields
             'passport_number': forms.TextInput(attrs={
                 'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
-            'nik': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
             'lapdik_number': forms.TextInput(attrs={
                 'class': 'mt-1 w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary'}),
             'arrival_date': forms.DateInput(attrs={'type': 'date',
@@ -450,7 +448,7 @@ class StaffStudentForm(forms.ModelForm):
             'parents_name', 'parents_phone',
             'institution', 'institution_custom', 'faculty', 'faculty_custom',
             'major', 'major_custom', 'degree_level', 'semester_level', 'latest_grade',
-            'passport_number', 'nik', 'lapdik_number', 'arrival_date', 'school_origin',
+            'passport_number', 'lapdik_number', 'arrival_date', 'school_origin',
             'home_name', 'home_location', 'level',
             'disease_history', 'disease_status',
             'sport_achievement', 'art_achievement',
@@ -481,8 +479,6 @@ class StaffStudentForm(forms.ModelForm):
             'membership_status': forms.Select(attrs={'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
             'latest_grade': forms.Select(attrs={'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
             'passport_number': forms.TextInput(attrs={
-                'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
-            'nik': forms.TextInput(attrs={
                 'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
             'lapdik_number': forms.TextInput(attrs={
                 'class': 'mt-1 w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500 text-sm'}),
@@ -581,7 +577,7 @@ class StaffStudentCreateForm(StaffStudentForm):
     def clean(self):
         cleaned = super().clean()
         # Trim whitespace for some fields
-        for f in ['passport_number', 'nik', 'email', 'first_name', 'last_name']:
+        for f in ['passport_number', 'email', 'first_name', 'last_name']:
             if cleaned.get(f):
                 cleaned[f] = cleaned[f].strip()
         # Required core fields enforcement (model might allow but we want explicit feedback)
@@ -602,8 +598,4 @@ class StaffStudentCreateForm(StaffStudentForm):
         if passport:
             if Student.objects.filter(passport_number=passport).exists():
                 self.add_error('passport_number', 'Passport already registered.')
-        nik = cleaned.get('nik')
-        if nik:
-            if Student.objects.filter(nik=nik).exists():
-                self.add_error('nik', 'NIK already registered.')
         return cleaned

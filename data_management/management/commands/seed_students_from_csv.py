@@ -75,7 +75,7 @@ class Command(BaseCommand):
 
         # fields we expect (based on provided index + user fields)
         expected_fields = [
-            'email', 'full_name', 'passport_number', 'nik', 'lapdik_number',
+            'email', 'full_name', 'passport_number', 'lapdik_number',
             'birth_place', 'birth_date', 'gender', 'arrival_date', 'school_origin',
             'marital_status', 'region_origin',
             'whatsapp_number', 'institution', 'faculty', 'major',
@@ -275,19 +275,16 @@ class Command(BaseCommand):
                     # default to S1 if not provided
                     student_defaults['degree_level'] = 'S1'
 
-                # find existing student by user, passport_number, or nik
+                # find existing student by user or passport_number
                 student = None
                 try:
                     student = Student.objects.get(user=user)
                 except Student.DoesNotExist:
                     # try passport
                     pnum = student_defaults.get('passport_number')
-                    nnum = student_defaults.get('nik')
                     q = Q()
                     if pnum:
                         q |= Q(passport_number=pnum)
-                    if nnum:
-                        q |= Q(nik=nnum)
                     if q:
                         try:
                             student = Student.objects.get(q)

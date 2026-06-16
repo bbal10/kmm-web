@@ -69,10 +69,6 @@
                     <p class="font-medium">{{ student.passport_number|default:'-' }}</p>
                 </div>
                 <div>
-                    <p class="text-gray-500">NIK</p>
-                    <p class="font-medium">{{ student.nik|default:'-' }}</p>
-                </div>
-                <div>
                     <p class="text-gray-500">Status Nikah</p>
                     <p class="font-medium">{{ student.get_marital_status_display }}</p>
                 </div>

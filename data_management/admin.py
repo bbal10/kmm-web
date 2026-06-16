@@ -5,7 +5,7 @@ from .models import District, Interest, InterestCategory, ScholarshipSource, Sch
 
 class StudentAdmin(admin.ModelAdmin):
     list_display = ('full_name', 'email', 'level', 'institution', 'faculty', 'major')
-    search_fields = ('user__first_name', 'user__last_name', 'user__email', 'passport_number', 'nik')
+    search_fields = ('user__first_name', 'user__last_name', 'user__email', 'passport_number')
     list_filter = ('level', 'institution', 'faculty', 'gender', 'membership_status', 'home_location')
     fieldsets = (
         ('Personal Info', {
@@ -18,7 +18,7 @@ class StudentAdmin(admin.ModelAdmin):
                        'school_origin')
         }),
         ('Identity Info', {
-            'fields': ('passport_number', 'nik', 'lapdik_number', 'arrival_date')
+            'fields': ('passport_number', 'lapdik_number', 'arrival_date')
         }),
         ('Contact & Residence', {
             'fields': ('parents_name', 'parents_phone', 'home_name', 'home_location')

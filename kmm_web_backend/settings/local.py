@@ -3,13 +3,15 @@ Local development settings for kmm_web_backend project.
 
 Settings ini digunakan untuk development lokal.
 - DEBUG = True
-- SQLite database
+- PostgreSQL (jika DATABASE_URL ada) atau SQLite (default)
 - Console email backend
 - Relaxed security settings
 - Verbose logging
 
 Untuk menggunakan: Jangan set DJANGO_ENV atau set DJANGO_ENV=local
 """
+
+import dj_database_url
 
 from .base import *
 
@@ -41,15 +43,29 @@ INSTALLED_APPS += [
 MIDDLEWARE.append('django_browser_reload.middleware.BrowserReloadMiddleware')
 
 # ============================================================================
-# DATABASE - SQLite untuk development
+# DATABASE - PostgreSQL (jika DATABASE_URL ada) atau SQLite (default)
 # ============================================================================
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Cek apakah DATABASE_URL ada di environment (misal dari Docker Compose)
+database_url = os.environ.get('DATABASE_URL')
+
+if database_url:
+    # Gunakan PostgreSQL via DATABASE_URL (dari Docker Compose)
+    DATABASES = {
+        'default': dj_database_url.parse(
+            database_url,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
-}
+else:
+    # Fallback ke SQLite untuk development tanpa Docker
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # ============================================================================
 # CACHE - Dummy cache untuk development (tidak benar-benar cache)

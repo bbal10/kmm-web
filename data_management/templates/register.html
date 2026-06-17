@@ -1,241 +1,98 @@
 {% extends 'base.html' %}
 {% load static %}
-
 {% block title %}Daftar - KMM Mesir{% endblock %}
-
 {% block wrapper %}
-    <div class="min-h-screen bg-white flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div class="max-w-md w-full space-y-8">
-            <div>
-                <div class="mx-auto h-20 w-20 flex items-center justify-center rounded-full bg-primary">
-                    <svg class="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
-                    </svg>
-                </div>
-                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                    Daftar Akun KMM Mesir
-                </h2>
-                <p class="mt-2 text-center text-sm text-gray-600">
-                    Bergabunglah dengan komunitas mahasiswa Minangkabau di Mesir
-                </p>
-            </div>
-
-            <form class="mt-8 space-y-6" method="post">
-                {% csrf_token %}
-
-                <!-- Display form errors -->
-                {% if form.non_field_errors %}
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                        {% for error in form.non_field_errors %}
-                            <p>{{ error }}</p>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-
-                <div class="space-y-4">
-                    <!-- Username Field -->
-                    <div>
-                        <label for="{{ form.username.id_for_label }}"
-                               class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                        <input
-                                id="{{ form.username.id_for_label }}"
-                                name="{{ form.username.name }}"
-                                type="text"
-                                required
-                                class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-                                placeholder="Masukkan username"
-                                value="{{ form.username.value|default_if_none:'' }}"
-                        >
-                        {% if form.username.errors %}
-                            <div class="text-red-600 text-xs mt-1">
-                                {% for error in form.username.errors %}
-                                    <p>{{ error }}</p>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- Email Field -->
-                    <div>
-                        <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                        <input
-                                id="{{ form.email.id_for_label }}"
-                                name="{{ form.email.name }}"
-                                type="email"
-                                required
-                                class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-                                placeholder="nama@email.com"
-                                value="{{ form.email.value|default_if_none:'' }}"
-                        >
-                        {% if form.email.errors %}
-                            <div class="text-red-600 text-xs mt-1">
-                                {% for error in form.email.errors %}
-                                    <p>{{ error }}</p>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- First Name Field -->
-                    <div>
-                        <label for="{{ form.first_name.id_for_label }}"
-                               class="block text-sm font-medium text-gray-700 mb-1">Nama Depan</label>
-                        <input
-                                id="{{ form.first_name.id_for_label }}"
-                                name="{{ form.first_name.name }}"
-                                type="text"
-                                required
-                                class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-                                placeholder="Nama depan"
-                                value="{{ form.first_name.value|default_if_none:'' }}"
-                        >
-                        {% if form.first_name.errors %}
-                            <div class="text-red-600 text-xs mt-1">
-                                {% for error in form.first_name.errors %}
-                                    <p>{{ error }}</p>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- Last Name Field -->
-                    <div>
-                        <label for="{{ form.last_name.id_for_label }}"
-                               class="block text-sm font-medium text-gray-700 mb-1">Nama Belakang</label>
-                        <input
-                                id="{{ form.last_name.id_for_label }}"
-                                name="{{ form.last_name.name }}"
-                                type="text"
-                                required
-                                class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-                                placeholder="Nama belakang"
-                                value="{{ form.last_name.value|default_if_none:'' }}"
-                        >
-                        {% if form.last_name.errors %}
-                            <div class="text-red-600 text-xs mt-1">
-                                {% for error in form.last_name.errors %}
-                                    <p>{{ error }}</p>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- Password Field -->
-                    <div>
-                        <label for="{{ form.password1.id_for_label }}"
-                               class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                        <input
-                                id="{{ form.password1.id_for_label }}"
-                                name="{{ form.password1.name }}"
-                                type="password"
-                                required
-                                class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-                                placeholder="Masukkan password"
-                        >
-                        {% if form.password1.errors %}
-                            <div class="text-red-600 text-xs mt-1">
-                                {% for error in form.password1.errors %}
-                                    <p>{{ error }}</p>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- Confirm Password Field -->
-                    <div>
-                        <label for="{{ form.password2.id_for_label }}"
-                               class="block text-sm font-medium text-gray-700 mb-1">Konfirmasi Password</label>
-                        <input
-                                id="{{ form.password2.id_for_label }}"
-                                name="{{ form.password2.name }}"
-                                type="password"
-                                required
-                                class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
-                                placeholder="Konfirmasi password"
-                        >
-                        {% if form.password2.errors %}
-                            <div class="text-red-600 text-xs mt-1">
-                                {% for error in form.password2.errors %}
-                                    <p>{{ error }}</p>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-between">
-                    <div class="text-sm">
-                        <a href="{% url 'data_management:login' %}"
-                           class="font-medium text-primary hover:text-primary-dark">
-                            Sudah punya akun? Login
-                        </a>
-                    </div>
-                    <div class="text-sm">
-                        <a href="{% url 'data_management:staff_login' %}"
-                           class="font-medium text-primary hover:text-primary-dark">
-                            Login sebagai staff
-                        </a>
-                    </div>
-                </div>
-
-                <div>
-                    <button type="submit"
-                            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition duration-150 ease-in-out">
-                    <span class="absolute left-0 inset-y-0 flex items-center pl-3">
-                        <svg class="h-5 w-5 text-primary-light group-hover:text-primary-lighter" fill="currentColor"
-                             viewBox="0 0 20 20">
-                            <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z"/>
-                        </svg>
-                    </span>
-                        Daftar Sekarang
-                    </button>
-                </div>
-            </form>
-
-            <div class="text-center">
-                <div class="text-sm text-gray-600">
-                    <p>© 2025 Kesepakan Mahasiswa Minangkabau Mesir</p>
-                </div>
-            </div>
+<div class="min-h-screen flex items-center justify-center bg-bg py-8 px-4 relative overflow-hidden">
+  <!-- Subtle vibrant background glow (Primary/Rose mix) -->
+  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-cta-300 rounded-full blur-[100px] opacity-20 pointer-events-none"></div>
+  
+  <div class="w-full max-w-md motion-fade-up relative z-10">
+    <div class="block-card p-8 sm:p-10 shadow-xl border-white/50 bg-white/80 backdrop-blur-xl">
+      <div class="text-center mb-8">
+        <div class="w-16 h-16 bg-gradient-to-br from-cta-500 to-cta-600 shadow-lg shadow-cta-500/30 mx-auto flex items-center justify-center rounded-2xl mb-6">
+          <svg class="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+          </svg>
         </div>
+        <h1 class="text-3xl font-extrabold text-text-primary tracking-tight font-sans">Daftar Akun</h1>
+        <p class="mt-2 text-sm text-text-muted font-medium">Keluarga Mahasiswa Minangkabau Mesir</p>
+      </div>
+      
+      <form class="space-y-4" method="post">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+        <div class="bg-error-light border border-error-border rounded-xl px-4 py-3 motion-fade-up" role="alert">
+          {% for error in form.non_field_errors %}
+          <p class="text-sm font-bold text-error-dark">{{ error }}</p>
+          {% endfor %}
+        </div>
+        {% endif %}
+        
+        <div class="motion-fade-up">
+          <label for="{{ form.username.id_for_label }}" class="block-label">Username</label>
+          <input id="{{ form.username.id_for_label }}" name="{{ form.username.name }}" type="text" required class="block-input" placeholder="Masukkan username" value="{{ form.username.value|default_if_none:'' }}" aria-describedby="username-help">
+          {% if form.username.errors %}
+          <p class="block-error-message" role="alert" id="username-error">{{ form.username.errors.0 }}</p>
+          {% endif %}
+        </div>
+        
+        <div class="motion-fade-up">
+          <label for="{{ form.email.id_for_label }}" class="block-label">Email</label>
+          <input id="{{ form.email.id_for_label }}" name="{{ form.email.name }}" type="email" required class="block-input" placeholder="nama@email.com" value="{{ form.email.value|default_if_none:'' }}" aria-describedby="email-help">
+          {% if form.email.errors %}
+          <p class="block-error-message" role="alert" id="email-error">{{ form.email.errors.0 }}</p>
+          {% endif %}
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4 motion-fade-up">
+          <div>
+            <label for="{{ form.first_name.id_for_label }}" class="block-label">Nama Depan</label>
+            <input id="{{ form.first_name.id_for_label }}" name="{{ form.first_name.name }}" type="text" required class="block-input" placeholder="Nama depan" value="{{ form.first_name.value|default_if_none:'' }}" aria-describedby="first_name-help">
+            {% if form.first_name.errors %}
+            <p class="block-error-message" role="alert" id="first_name-error">{{ form.first_name.errors.0 }}</p>
+            {% endif %}
+          </div>
+          <div>
+            <label for="{{ form.last_name.id_for_label }}" class="block-label">Nama Belakang</label>
+            <input id="{{ form.last_name.id_for_label }}" name="{{ form.last_name.name }}" type="text" required class="block-input" placeholder="Nama belakang" value="{{ form.last_name.value|default_if_none:'' }}" aria-describedby="last_name-help">
+            {% if form.last_name.errors %}
+            <p class="block-error-message" role="alert" id="last_name-error">{{ form.last_name.errors.0 }}</p>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="motion-fade-up">
+          <label for="{{ form.password1.id_for_label }}" class="block-label">Password</label>
+          <input id="{{ form.password1.id_for_label }}" name="{{ form.password1.name }}" type="password" required class="block-input" placeholder="Masukkan password" aria-describedby="password1-help">
+          {% if form.password1.errors %}
+          <p class="block-error-message" role="alert" id="password1-error">{{ form.password1.errors.0 }}</p>
+          {% endif %}
+        </div>
+        
+        <div class="motion-fade-up">
+          <label for="{{ form.password2.id_for_label }}" class="block-label">Konfirmasi Password</label>
+          <input id="{{ form.password2.id_for_label }}" name="{{ form.password2.name }}" type="password" required class="block-input" placeholder="Konfirmasi password" aria-describedby="password2-help">
+          {% if form.password2.errors %}
+          <p class="block-error-message" role="alert" id="password2-error">{{ form.password2.errors.0 }}</p>
+          {% endif %}
+        </div>
+        
+        <button type="submit" class="block-btn-cta w-full py-3 mt-2 text-sm font-bold shadow-lg motion-press rounded-xl">
+          DAFTAR SEKARANG
+        </button>
+      </form>
+      <hr class="block-divider my-6">
+      <div class="flex flex-col space-y-3 text-center text-sm">
+        <a href="{% url 'data_management:login' %}" class="font-bold text-primary-600 hover:text-primary-700 cursor-pointer transition-colors duration-150">
+          Sudah punya akun? Login di sini
+        </a>
+        <a href="{% url 'data_management:staff_login' %}" class="font-medium text-text-muted hover:text-text-primary cursor-pointer transition-colors duration-150">
+          Login sebagai Staff
+        </a>
+      </div>
     </div>
+    
+    <p class="text-center text-sm text-text-muted mt-8 font-medium">&copy; 2026 KMM MESIR</p>
+  </div>
+</div>
 {% endblock wrapper %}
-
-<!-- Custom CSS for primary colors -->
-{% block extra_css %}
-    <style>
-        .bg-primary {
-            background-color: #3B82F6;
-        }
-
-        .text-primary {
-            color: #3B82F6;
-        }
-
-        .hover\:text-primary-dark:hover {
-            color: #2563EB;
-        }
-
-        .bg-primary:hover,
-        .hover\:bg-primary-dark:hover {
-            background-color: #2563EB;
-        }
-
-        .focus\:ring-primary:focus {
-            --tw-ring-color: #3B82F6;
-        }
-
-        .focus\:border-primary:focus {
-            border-color: #3B82F6;
-        }
-
-        .text-primary-light {
-            color: #60A5FA;
-        }
-
-        .group:hover .group-hover\:text-primary-lighter {
-            color: #93C5FD;
-        }
-    </style>
-{% endblock extra_css %}

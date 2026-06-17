@@ -1,29 +1,32 @@
 {% load vite %}
 {% load static %}
 {% load django_htmx %}
-
 <!DOCTYPE html>
 <html lang="id" class="scroll-smooth" data-theme="light">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <title>{% block title %}Ta3lem - Learning Management System{% endblock %}</title>
-    {% enable_vite %}
-    {% htmx_script %}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    {% block extra_css %}{% endblock %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>{% block title %}KMM Mesir{% endblock %}</title>
+  {% enable_vite %}
+  {% htmx_script %}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  {% block extra_css %}{% endblock %}
 </head>
-<body class="bg-gray-100">
-{% block navbar %}{% endblock %}
-{% block sidebar %}{% endblock %}
-
-<!-- Main content wrapper - can be overridden for pages without navbar/sidebar -->
-{% block wrapper %}
-    <div class="pt-16 md:pl-64">
-        <main class="min-h-screen">
-            {% block content %}{% endblock %}
-        </main>
-    </div>
-{% endblock wrapper %}
+<body class="bg-bg text-text-primary min-h-screen">
+  <!-- Skip link for keyboard navigation -->
+  <a href="#main-content" class="skip-link">Lewati ke konten utama</a>
+  
+  {% block navbar %}{% endblock %}
+  {% block sidebar %}{% endblock %}
+  
+  {% block wrapper %}
+  <div class="pt-16 md:pl-64">
+    <main id="main-content" class="min-h-screen">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+  {% endblock wrapper %}
+  
+  {% block extra_js %}{% endblock %}
 </body>
 </html>

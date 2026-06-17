@@ -52,26 +52,30 @@ mkdir -p logs backups nginx/ssl media
 echo "🔒 Setting permissions..."
 chmod +x docker-entrypoint.sh
 
-# Build images
-echo "🏗️  Building Docker images..."
-docker compose build --no-cache
+# Build images using production config
+echo "🏗️  Building Docker images (Production Mode)..."
+docker compose -f docker-compose.prod.yml build --no-cache
 
-# Start services
+# Start services using production config
 echo "🚀 Starting services..."
-docker compose up -d
+docker compose -f docker-compose.prod.yml up -d
 
 # Wait for services to be healthy
 echo "⏳ Waiting for services to be healthy..."
 sleep 10
 
+# Collect static files
+echo "📦 Collecting static files..."
+docker compose -f docker-compose.prod.yml exec -T web uv run python manage.py collectstatic --noinput
+
 # Check service status
 echo "📊 Service Status:"
-docker compose ps
+docker compose -f docker-compose.prod.yml ps
 
 # Show logs
 echo ""
 echo "📝 Recent Logs:"
-docker compose logs --tail=50
+docker compose -f docker-compose.prod.yml logs --tail=50
 
 echo ""
 echo "✅ Deployment Complete!"
@@ -82,10 +86,11 @@ echo "   - Admin: http://localhost/admin"
 echo "   - Health: http://localhost/health/"
 echo ""
 echo "📋 Useful commands:"
-echo "   - View logs: docker-compose logs -f"
-echo "   - Stop: docker-compose down"
-echo "   - Restart: docker-compose restart"
-echo "   - Shell: docker-compose exec web python manage.py shell"
+echo "   - View logs: docker compose -f docker-compose.prod.yml logs -f"
+echo "   - Stop: docker compose -f docker-compose.prod.yml down"
+echo "   - Restart: docker compose -f docker-compose.prod.yml restart"
+echo "   - Shell: docker compose -f docker-compose.prod.yml exec web uv run python manage.py shell"
+echo "   - Migrate: docker compose -f docker-compose.prod.yml exec web uv run python manage.py migrate"
 echo ""
 echo "📖 For more information, see DOCKER_DEPLOYMENT.md"
 

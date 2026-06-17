@@ -24,11 +24,7 @@ class Migration(migrations.Migration):
                 'ordering': ['id'],
             },
         ),
-        migrations.AlterField(
-            model_name='student',
-            name='id',
-            field=models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID'),
-        ),
+
         migrations.CreateModel(
             name='Interest',
             fields=[

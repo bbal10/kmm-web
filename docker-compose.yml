@@ -41,11 +41,30 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-kmm_user}:${POSTGRES_PASSWORD:-changeme_secure_password_here}@postgres:5432/${POSTGRES_DB:-kmm_web_db}
       REDIS_URL: redis://redis:6379/0
+      VITE_DEV_MODE: "True"
+      VITE_DEV_SERVER_URL: "http://localhost:5173"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+
+  # Vite dev server for hot-reloading frontend (JS/CSS/TS + Tailwind)
+  vite:
+    build: ./
+    entrypoint: []
+    working_dir: /app/vite/src
+    command: sh -c "npm ci --prefer-offline --no-audit --progress=false 2>/dev/null || npm install --prefer-offline --no-audit --progress=false; npm run dev"
+    volumes:
+      - .:/app
+      # Anonymous volume to keep container's node_modules (prevents host overlay issues)
+      - /app/vite/src/node_modules
+    ports:
+      - "5173:5173"
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+    depends_on:
+      - web
 
 volumes:
   postgres_data:

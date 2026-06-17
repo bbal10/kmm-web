@@ -1,195 +1,237 @@
 {% extends 'base.html' %}
 {% load static %}
-
 {% block title %}Detail Mahasiswa - KMM Mesir{% endblock %}
-
 {% block navbar %}
-    {% include "navbar.html" %}
+{% include "navbar.html" %}
 {% endblock %}
-
 {% block sidebar %}
-    {% include "sidebar.html" %}
+{% include "sidebar.html" %}
 {% endblock %}
-
 {% block content %}
-<div class="p-6">
-    <div class="mb-6">
-        <div class="flex items-center justify-between mb-4">
-            <h1 class="text-2xl font-bold text-gray-900">Detail Data Mahasiswa</h1>
-            <div class="flex space-x-2">
-                <a href="{% url 'data_management:staff_student_list' %}" class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium">← Kembali</a>
-                <a href="{% url 'data_management:staff_student_edit' student.pk %}?next={{ request.get_full_path|urlencode }}" class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium">Edit</a>
-                <form method="post" action="{% url 'data_management:staff_student_reset_password' student.pk %}" onsubmit="return confirm('Reset password untuk akun ini?');">
-                    {% csrf_token %}
-                    <button type="submit" class="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium">Reset Password</button>
-                </form>
-                <a href="{% url 'data_management:staff_student_delete' student.pk %}" class="px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white text-sm font-medium" onclick="return confirm('Lanjut ke halaman konfirmasi hapus?');">Hapus</a>
-            </div>
-        </div>
+<div class="p-6 md:p-8 space-y-6">
+  <div class="flex items-center justify-between flex-wrap gap-4 motion-fade-up">
+    <h1 class="text-3xl font-extrabold text-text-primary font-sans tracking-tight">Detail Mahasiswa</h1>
+    <div class="flex gap-2 flex-wrap">
+      <a href="{% url 'data_management:staff_student_list' %}" class="block-btn block-btn-ghost text-xs shadow-sm"><i class="fas fa-arrow-left mr-1.5"></i> KEMBALI</a>
+      <a href="{% url 'data_management:staff_student_edit' student.pk %}?next={{ request.get_full_path|urlencode }}" class="block-btn block-btn-primary text-xs shadow-sm"><i class="fas fa-edit mr-1.5"></i> EDIT</a>
+      <form method="post" action="{% url 'data_management:staff_student_reset_password' student.pk %}" onsubmit="return confirm('Reset password untuk akun ini?');" class="inline">
+        {% csrf_token %}
+        <button type="submit" class="block-btn block-btn-outline text-xs text-primary-600 border-primary-600 hover:bg-primary-50 hover:text-primary-700 shadow-sm">
+          <i class="fas fa-key mr-1.5"></i> RESET PASSWORD
+        </button>
+      </form>
+      <a href="{% url 'data_management:staff_student_delete' student.pk %}" class="block-btn block-btn-outline text-xs text-error border-error hover:bg-error-light hover:text-error-dark shadow-sm" onclick="return confirm('Lanjut ke halaman konfirmasi hapus?');">
+        <i class="fas fa-trash-alt mr-1.5"></i> HAPUS
+      </a>
     </div>
-
-    <div class="bg-white shadow rounded-lg p-6 space-y-8">
-        <!-- Header Card -->
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-            <div class="flex items-center gap-4">
-                <div class="w-24 h-24 rounded-full bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center text-3xl text-blue-400 border border-blue-200">
-                    {{ student.full_name|first|upper }}
-                </div>
-                <div>
-                    <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                        {{ student.full_name }}
-                        <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-600 text-white">{{ student.get_level_display }}</span>
-                    </h2>
-                    <p class="text-sm text-gray-500">Email: {{ student.email }}</p>
-                    <p class="text-sm text-gray-500">Gender: {{ student.get_gender_display }}</p>
-                </div>
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-                <div class="p-3 bg-gray-50 rounded border border-gray-200">
-                    <p class="text-gray-500">Jenjang</p>
-                    <p class="font-semibold text-gray-800">{{ student.degree_level }}</p>
-                </div>
-                <div class="p-3 bg-gray-50 rounded border border-gray-200">
-                    <p class="text-gray-500">Semester</p>
-                    <p class="font-semibold text-gray-800">{{ student.get_semester_level_display|default:'-' }}</p>
-                </div>
-                <div class="p-3 bg-gray-50 rounded border border-gray-200">
-                    <p class="text-gray-500">Nilai Terakhir</p>
-                    <p class="font-semibold text-gray-800">{{ student.get_latest_grade_display|default:'-' }}</p>
-                </div>
-            </div>
+  </div>
+  
+  <div class="block-card p-6 md:p-8 space-y-10 border-0 shadow-md">
+    <!-- Header Section -->
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8 motion-stagger">
+      <div class="flex items-center gap-5 motion-fade-up">
+        <div class="w-24 h-24 bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-4xl text-white font-sans font-extrabold rounded-2xl shadow-lg shadow-primary-500/30">
+          {{ student.full_name|first|upper }}
         </div>
-
-        <!-- Identitas -->
-        <div class="space-y-4">
-            <h3 class="text-lg font-semibold text-gray-800">Identitas</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div>
-                    <p class="text-gray-500">Passport</p>
-                    <p class="font-medium">{{ student.passport_number|default:'-' }}</p>
-                </div>
-                <div>
-                    <p class="text-gray-500">Status Nikah</p>
-                    <p class="font-medium">{{ student.get_marital_status_display }}</p>
-                </div>
-                <div>
-                    <p class="text-gray-500">Status Keanggotaan</p>
-                    <p class="font-medium">{{ student.get_membership_status_display|default:'-' }}</p>
-                </div>
-                <div>
-                    <p class="text-gray-500">Tempat / Tgl Lahir</p>
-                    <p class="font-medium">{{ student.birth_place|default:'-' }}, {{ student.birth_date|date:'d M Y'|default:'-' }}</p>
-                </div>
-                <div>
-                    <p class="text-gray-500">Wilayah Asal</p>
-                    <p class="font-medium">{{ student.region_origin|default:'-' }}</p>
-                </div>
-                <div>
-                    <p class="text-gray-500">WhatsApp</p>
-                    <p class="font-medium">{{ student.whatsapp_number|default:'-' }}</p>
-                </div>
-                <div>
-                    <p class="text-gray-500">Nama Orang Tua</p>
-                    <p class="font-medium">{{ student.parents_name|default:'-' }}</p>
-                </div>
-                <div>
-                    <p class="text-gray-500">No. Telepon Orang Tua</p>
-                    <p class="font-medium">{{ student.parents_phone|default:'-' }}</p>
-                </div>
-                <div class="md:col-span-3">
-                    <p class="text-gray-500">Alamat (Home)</p>
-                    <p class="font-medium">{{ student.home_name|default:'-' }} {{ student.home_location|default:'' }}</p>
-                </div>
-            </div>
+        <div>
+          <h2 class="text-2xl font-extrabold text-text-primary flex items-center gap-3">
+            {{ student.full_name }}
+            <span class="block-badge block-badge--primary shadow-sm">{{ student.get_level_display }}</span>
+          </h2>
+          <div class="mt-2 space-y-1">
+            <p class="text-sm text-text-muted font-medium flex items-center gap-2"><i class="fas fa-envelope text-primary-400 w-4"></i> {{ student.email }}</p>
+            <p class="text-sm text-text-muted font-medium flex items-center gap-2"><i class="fas fa-venus-mars text-primary-400 w-4"></i> {{ student.get_gender_display }}</p>
+          </div>
         </div>
-
-        <!-- Akademik -->
-        <div class="space-y-4">
-            <h3 class="text-lg font-semibold text-gray-800">Akademik</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div>
-                    <p class="text-gray-500">Institusi</p>
-                    <p class="font-medium">{{ student.institution_display|default:'-' }}</p>
-                </div>
-                <div>
-                    <p class="text-gray-500">Fakultas</p>
-                    <p class="font-medium">{{ student.faculty_display|default:'-' }}</p>
-                </div>
-                <div>
-                    <p class="text-gray-500">Jurusan</p>
-                    <p class="font-medium">{{ student.major_display|default:'-' }}</p>
-                </div>
-                <div class="md:col-span-3">
-                    <p class="text-gray-500">Riwayat Organisasi</p>
-                    <p class="font-medium whitespace-pre-line">{{ student.organization_history|default:'-' }}</p>
-                </div>
-            </div>
+      </div>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm w-full lg:w-auto">
+        <div class="bg-surface p-4 rounded-xl border border-primary-200 shadow-sm motion-fade-up">
+          <div class="flex items-center gap-2 text-primary-600 mb-1">
+            <i class="fas fa-graduation-cap"></i>
+            <p class="text-xs font-bold uppercase tracking-wider">Jenjang</p>
+          </div>
+          <p class="font-extrabold text-text-primary text-lg">{{ student.degree_level }}</p>
         </div>
-
-        <!-- Kesehatan -->
-        <div class="space-y-4">
-            <h3 class="text-lg font-semibold text-gray-800">Kesehatan</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div>
-                    <p class="text-gray-500">Riwayat Penyakit</p>
-                    <p class="font-medium">{{ student.disease_history|default:'-' }}</p>
-                </div>
-                <div>
-                    <p class="text-gray-500">Status Penyakit</p>
-                    <p class="font-medium">{{ student.get_disease_status_display|default:'-' }}</p>
-                </div>
-            </div>
+        <div class="bg-surface p-4 rounded-xl border border-success-border shadow-sm motion-fade-up">
+          <div class="flex items-center gap-2 text-success-dark mb-1">
+            <i class="fas fa-layer-group"></i>
+            <p class="text-xs font-bold uppercase tracking-wider">Semester</p>
+          </div>
+          <p class="font-extrabold text-text-primary text-lg">{{ student.get_semester_level_display|default:'-' }}</p>
         </div>
-
-        <!-- Informasi Keuangan -->
-        <div class="space-y-4">
-            <h3 class="text-lg font-semibold text-gray-800">Informasi Keuangan</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div>
-                    <p class="text-gray-500">Biaya Pendidikan</p>
-                    <p class="font-medium">{{ student.get_education_funding_display|default:'-' }}</p>
-                </div>
-                <div>
-                    <p class="text-gray-500">Sumber Beasiswa</p>
-                    <p class="font-medium">{{ student.scholarship_source_display|default:'-' }}</p>
-                </div>
-                <div>
-                    <p class="text-gray-500">Biaya Hidup Bulanan</p>
-                    <p class="font-medium">{{ student.get_living_cost_display|default:'-' }}</p>
-                </div>
-                <div>
-                    <p class="text-gray-500">Pendapatan Bulanan</p>
-                    <p class="font-medium">{{ student.get_monthly_income_display|default:'-' }}</p>
-                </div>
-            </div>
+        <div class="bg-surface p-4 rounded-xl border border-warning-border shadow-sm motion-fade-up">
+          <div class="flex items-center gap-2 text-warning-dark mb-1">
+            <i class="fas fa-star"></i>
+            <p class="text-xs font-bold uppercase tracking-wider">Nilai</p>
+          </div>
+          <p class="font-extrabold text-text-primary text-lg">{{ student.get_latest_grade_display|default:'-' }}</p>
         </div>
-
-        <!-- Minat & Bakat -->
-        <div class="space-y-4">
-            <h3 class="text-lg font-semibold text-gray-800">Minat & Bakat</h3>
-            {% if interests_by_category %}
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                {% for group in interests_by_category %}
-                <div class="border border-gray-100 rounded-lg p-3">
-                    <p class="text-gray-500 mb-2 font-medium text-xs uppercase tracking-wide">{{ group.category.name }}</p>
-                    <ul class="space-y-1">
-                        {% for si in group.items %}
-                        <li class="font-medium">
-                            {% if si.interest.allow_custom and si.custom_value %}
-                                {{ si.custom_value }}
-                            {% else %}
-                                {{ si.interest.name }}
-                            {% endif %}
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                {% endfor %}
-            </div>
+      </div>
+    </div>
+    
+    <!-- Identity Section -->
+    <div class="motion-stagger">
+      <h3 class="block-section-title"><i class="fas fa-id-card text-primary-500"></i> IDENTITAS</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 text-sm bg-surface-alt/50 p-6 rounded-2xl border border-border">
+        <div class="motion-fade-up">
+          <p class="text-text-muted text-xs font-bold tracking-wider mb-1">PASSPORT</p>
+          <p class="font-bold text-text-primary font-mono bg-surface inline-block px-2 py-1 rounded border border-border shadow-sm">{{ student.passport_number|default:'-' }}</p>
+        </div>
+        <div class="motion-fade-up">
+          <p class="text-text-muted text-xs font-bold tracking-wider mb-1">STATUS NIKAH</p>
+          <p class="font-bold text-text-primary">{{ student.get_marital_status_display }}</p>
+        </div>
+        <div class="motion-fade-up">
+          <p class="text-text-muted text-xs font-bold tracking-wider mb-1">STATUS KEANGGOTAAN</p>
+          <p class="font-bold text-text-primary">
+            {% if student.get_membership_status_display %}
+              <span class="block-badge block-badge--info">{{ student.get_membership_status_display }}</span>
             {% else %}
-            <p class="text-sm text-gray-400">-</p>
+              -
             {% endif %}
+          </p>
         </div>
+        <div class="motion-fade-up">
+          <p class="text-text-muted text-xs font-bold tracking-wider mb-1">TEMPAT / TGL LAHIR</p>
+          <p class="font-bold text-text-primary">{{ student.birth_place|default:'-' }}, {{ student.birth_date|date:'d M Y'|default:'-' }}</p>
+        </div>
+        <div class="motion-fade-up">
+          <p class="text-text-muted text-xs font-bold tracking-wider mb-1">WILAYAH ASAL</p>
+          <p class="font-bold text-text-primary">{{ student.region_origin|default:'-' }}</p>
+        </div>
+        <div class="motion-fade-up">
+          <p class="text-text-muted text-xs font-bold tracking-wider mb-1">WHATSAPP</p>
+          <p class="font-bold text-text-primary font-mono flex items-center gap-2">
+            <i class="fab fa-whatsapp text-success"></i>
+            {{ student.whatsapp_number|default:'-' }}
+          </p>
+        </div>
+        <div class="motion-fade-up">
+          <p class="text-text-muted text-xs font-bold tracking-wider mb-1">NAMA ORANG TUA</p>
+          <p class="font-bold text-text-primary">{{ student.parents_name|default:'-' }}</p>
+        </div>
+        <div class="motion-fade-up">
+          <p class="text-text-muted text-xs font-bold tracking-wider mb-1">NO. TELP ORANG TUA</p>
+          <p class="font-bold text-text-primary font-mono">{{ student.parents_phone|default:'-' }}</p>
+        </div>
+        <div class="md:col-span-3 motion-fade-up pt-2 border-t border-border/50">
+          <p class="text-text-muted text-xs font-bold tracking-wider mb-1">ALAMAT (HOME)</p>
+          <p class="font-bold text-text-primary flex items-start gap-2">
+            <i class="fas fa-map-marker-alt text-error mt-0.5"></i>
+            <span>{{ student.home_name|default:'-' }} {{ student.home_location|default:'' }}</span>
+          </p>
+        </div>
+      </div>
     </div>
+    
+    <!-- Academic Section -->
+    <div>
+      <h3 class="block-section-title"><i class="fas fa-university text-primary-500"></i> AKADEMIK</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 text-sm bg-surface-alt/50 p-6 rounded-2xl border border-border">
+        <div class="motion-fade-up">
+          <p class="text-text-muted text-xs font-bold tracking-wider mb-1">INSTITUSI</p>
+          <p class="font-bold text-text-primary">{{ student.institution_display|default:'-' }}</p>
+        </div>
+        <div class="motion-fade-up">
+          <p class="text-text-muted text-xs font-bold tracking-wider mb-1">FAKULTAS</p>
+          <p class="font-bold text-text-primary">{{ student.faculty_display|default:'-' }}</p>
+        </div>
+        <div class="motion-fade-up">
+          <p class="text-text-muted text-xs font-bold tracking-wider mb-1">JURUSAN</p>
+          <p class="font-bold text-text-primary">{{ student.major_display|default:'-' }}</p>
+        </div>
+        <div class="md:col-span-3 motion-fade-up pt-2 border-t border-border/50">
+          <p class="text-text-muted text-xs font-bold tracking-wider mb-2">RIWAYAT ORGANISASI</p>
+          <div class="bg-surface p-4 rounded-xl border border-border">
+            <p class="font-medium text-text-secondary whitespace-pre-line leading-relaxed">{{ student.organization_history|default:'-' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Health Section -->
+    <div>
+      <h3 class="block-section-title"><i class="fas fa-heartbeat text-primary-500"></i> KESEHATAN</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 text-sm bg-surface-alt/50 p-6 rounded-2xl border border-border">
+        <div class="motion-fade-up md:col-span-2">
+          <p class="text-text-muted text-xs font-bold tracking-wider mb-1">RIWAYAT PENYAKIT</p>
+          <p class="font-bold text-text-primary">{{ student.disease_history|default:'-' }}</p>
+        </div>
+        <div class="motion-fade-up">
+          <p class="text-text-muted text-xs font-bold tracking-wider mb-1">STATUS PENYAKIT</p>
+          <p class="font-bold text-text-primary">
+            {% if student.disease_status %}
+              <span class="block-badge block-badge--warning shadow-sm">{{ student.get_disease_status_display }}</span>
+            {% else %}
+              -
+            {% endif %}
+          </p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Financial Section -->
+    <div>
+      <h3 class="block-section-title"><i class="fas fa-coins text-primary-500"></i> INFORMASI KEUANGAN</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 text-sm bg-surface-alt/50 p-6 rounded-2xl border border-border">
+        <div class="motion-fade-up">
+          <p class="text-text-muted text-xs font-bold tracking-wider mb-1">BIAYA PENDIDIKAN</p>
+          <p class="font-bold text-text-primary">{{ student.get_education_funding_display|default:'-' }}</p>
+        </div>
+        <div class="motion-fade-up">
+          <p class="text-text-muted text-xs font-bold tracking-wider mb-1">SUMBER BEASISWA</p>
+          <p class="font-bold text-text-primary">{{ student.scholarship_source_display|default:'-' }}</p>
+        </div>
+        <div class="motion-fade-up">
+          <p class="text-text-muted text-xs font-bold tracking-wider mb-1">BIAYA HIDUP BULANAN</p>
+          <p class="font-bold text-text-primary">{{ student.get_living_cost_display|default:'-' }}</p>
+        </div>
+        <div class="motion-fade-up">
+          <p class="text-text-muted text-xs font-bold tracking-wider mb-1">PENDAPATAN BULANAN</p>
+          <p class="font-bold text-text-primary">{{ student.get_monthly_income_display|default:'-' }}</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Interests Section -->
+    <div>
+      <h3 class="block-section-title"><i class="fas fa-paint-brush text-primary-500"></i> MINAT & BAKAT</h3>
+      <div class="bg-surface-alt/50 p-6 rounded-2xl border border-border">
+        {% if interests_by_category %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          {% for group in interests_by_category %}
+          <div class="bg-surface p-4 rounded-xl border border-border shadow-sm motion-fade-up">
+            <div class="flex items-center gap-2 mb-3 pb-2 border-b border-border/50">
+              <div class="w-6 h-6 rounded-md bg-primary-100 text-primary-600 flex items-center justify-center">
+                <i class="fas fa-star text-xs"></i>
+              </div>
+              <p class="text-sm font-bold text-text-primary">{{ group.category.name }}</p>
+            </div>
+            <ul class="space-y-2">
+              {% for si in group.items %}
+              <li class="flex items-center gap-2 text-text-secondary">
+                <i class="fas fa-check text-success text-[10px]"></i>
+                <span class="font-semibold">
+                  {% if si.interest.allow_custom and si.custom_value %}
+                  {{ si.custom_value }}
+                  {% else %}
+                  {{ si.interest.name }}
+                  {% endif %}
+                </span>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-6">
+          <p class="text-sm font-medium text-text-subtle">Belum ada data minat & bakat yang diisi.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

@@ -1,32 +1,25 @@
-{% extends 'base.html' %} {% load static split_url %} {% block title %} Edit
-Mahasiswa - {{ student.full_name }} {% endblock %} {% block navbar %}{% include
-'navbar.html' %}{% endblock %} {% block sidebar %}{% include 'sidebar.html' %}{%
-endblock %} {% block content %}
-<div class="w-full p-6 space-y-6" x-data="{ submitting:false }">
-  <div class="flex items-center justify-between flex-wrap gap-4">
-    <div class="flex items-center gap-3 flex-wrap">
-      <h1 class="text-2xl font-bold text-gray-800">Edit Mahasiswa</h1>
-      {% if student.is_draft %}<span
-        class="px-2 py-0.5 text-xs rounded bg-amber-500 text-white font-semibold"
-        >Draft</span
-      >{% endif %}
-    </div>
-    <div class="flex items-center gap-2">
-      <a
-        href="{% url 'data_management:staff_student_detail' student.pk %}"
-        class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium"
-        >← Kembali</a
-      >
-    </div>
-  </div>
-
-  <form
-    id="student-edit-form"
-    method="post"
-    enctype="multipart/form-data"
-    class="bg-white shadow rounded-lg p-6 space-y-8"
-    x-on:submit="submitting=true"
-  >
+{% extends 'base.html' %}
+{% load static split_url %}
+{% block title %}Edit Mahasiswa - {{ student.full_name }}{% endblock %}
+{% block navbar %}{% include 'navbar.html' %}{% endblock %}
+{% block sidebar %}{% include 'sidebar.html' %}{% endblock %}
+{% block content %}
+<div class="w-full p-6 md:p-8 space-y-6" x-data="{ submitting:false }">
+  <div class="flex items-center justify-between flex-wrap gap-4 motion-fade-up">
+     <div class="flex items-center gap-3 flex-wrap">
+       <h1 class="text-3xl font-extrabold text-text-primary font-sans tracking-tight">Edit Mahasiswa</h1>
+       {% if student.is_draft %}
+       <span class="block-badge block-badge--warning shadow-sm px-2 py-0.5 mt-1">DRAFT</span>
+       {% endif %}
+     </div>
+     <div class="flex items-center gap-2">
+       <a href="{% url 'data_management:staff_student_detail' student.pk %}" class="block-btn block-btn-ghost text-xs shadow-sm">
+         <i class="fas fa-arrow-left mr-1.5"></i> KEMBALI
+       </a>
+     </div>
+   </div>
+ 
+   <form id="student-edit-form" method="post" enctype="multipart/form-data" class="block-card p-6 md:p-8 space-y-10 border-0 shadow-md" x-on:submit="submitting=true">
     {% csrf_token %}
     <input type="hidden" name="next" value="{{ next_url }}" />
     {{ form.is_draft }}
@@ -38,179 +31,168 @@ endblock %} {% block content %}
     </datalist>
 
     {% if form.non_field_errors %}
-    <div
-      class="p-4 rounded border border-red-300 bg-red-50 text-sm text-red-700"
-    >
+    <div class="p-4 rounded-xl border border-error-border bg-error-light text-sm font-semibold text-error-dark shadow-sm">
       {% for err in form.non_field_errors %}
-      <p>{{ err }}</p>
+      <p class="flex items-center gap-2"><i class="fas fa-exclamation-circle text-error"></i> {{ err }}</p>
       {% endfor %}
     </div>
     {% endif %}
+    
+    <div class="space-y-5">
+      <h2 class="block-section-title"><i class="fas fa-id-badge text-primary-500 mr-1.5"></i> IDENTITAS DASAR</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm bg-surface-alt/50 p-6 rounded-2xl border border-border">
+        {% for field_name in basic_fields %}
+          {% with f=form|get_field:field_name %}
+          <div>
+            <label class="block-label">{{ f.label }}</label>
 
-    <!-- Identitas Dasar -->
-    <div class="space-y-4">
-      <h2 class="text-lg font-semibold text-gray-800">Identitas Dasar</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-        {% for field_name in basic_fields %} {% with f=form|get_field:field_name
-        %}
-        <div>
-          <label class="block text-gray-600 mb-1 text-xs font-medium"
-            >{{ f.label }}</label
-          >
+            {% if field_name == 'whatsapp_number' %}
+              {{ f }}
+               <p class="text-[11px] text-text-subtle mt-1.5 font-medium flex items-start gap-1">
+                 <i class="fas fa-info-circle mt-0.5 text-primary-400"></i>
+                 <span>Gunakan format internasional. Ketik kode negara (contoh: +62, +20) untuk melihat daftar.</span>
+               </p>
+            {% else %}
+              {{ f }}
+            {% endif %}
 
-          {% if field_name == 'whatsapp_number' %} {{ f }}
-          <p class="text-[11px] text-gray-500 mt-1">
-            Gunakan format internasional. Ketik kode negara (contoh: +62, +20)
-            untuk melihat daftar.
-          </p>
-          {% else %} {{ f }} {% endif %} {% if f.errors %}
-          <p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>
-          {% endif %}
-        </div>
-        {% endwith %} {% endfor %}
-      </div>
-    </div>
-
-    <!-- Akademik -->
-    <div class="space-y-4">
-      <h2 class="text-lg font-semibold text-gray-800">Akademik</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-        {% for field_name in academic_fields %} {% if field_name == 'institution_custom' or field_name == 'faculty_custom' or field_name == 'major_custom' %}
-        {# Custom fields rendered inline with their parent #}
-        {% elif field_name == 'institution' or field_name == 'faculty' or field_name == 'major' %}
-        {% with f=form|get_field:field_name %}
-        <div x-data="{ showCustom: $el.querySelector('select').value === 'other' }">
-          <label class="block text-gray-600 mb-1 text-xs font-medium">{{ f.label }}</label>
-          <div x-on:change="showCustom = $event.target.value === 'other'">
-            {{ f }}
-          </div>
-          {% if f.errors %}
-          <p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>
-          {% endif %}
-          {% if field_name == 'institution' %}
-          {% with cf=form|get_field:"institution_custom" %}
-          <div x-show="showCustom" x-cloak class="mt-2">
-            <label class="block text-gray-600 mb-1 text-xs font-medium">{{ cf.label }} (Isi Sendiri)</label>
-            {{ cf }}
-            {% if cf.errors %}
-            <p class="text-xs text-red-600 mt-1">{{ cf.errors.0 }}</p>
+            {% if f.errors %}
+               <p class="text-xs text-error font-bold mt-1.5 flex items-center gap-1"><i class="fas fa-exclamation-circle"></i> {{ f.errors.0 }}</p>
             {% endif %}
           </div>
           {% endwith %}
-          {% elif field_name == 'faculty' %}
-          {% with cf=form|get_field:"faculty_custom" %}
-          <div x-show="showCustom" x-cloak class="mt-2">
-            <label class="block text-gray-600 mb-1 text-xs font-medium">{{ cf.label }} (Isi Sendiri)</label>
-            {{ cf }}
-            {% if cf.errors %}
-            <p class="text-xs text-red-600 mt-1">{{ cf.errors.0 }}</p>
-            {% endif %}
-          </div>
-          {% endwith %}
-          {% elif field_name == 'major' %}
-          {% with cf=form|get_field:"major_custom" %}
-          <div x-show="showCustom" x-cloak class="mt-2">
-            <label class="block text-gray-600 mb-1 text-xs font-medium">{{ cf.label }} (Isi Sendiri)</label>
-            {{ cf }}
-            {% if cf.errors %}
-            <p class="text-xs text-red-600 mt-1">{{ cf.errors.0 }}</p>
-            {% endif %}
-          </div>
-          {% endwith %}
-          {% endif %}
-        </div>
-        {% endwith %}
-        {% else %}
-        {% with f=form|get_field:field_name %}
-        <div>
-          <label class="block text-gray-600 mb-1 text-xs font-medium">{{ f.label }}</label>
-          {{ f }}
-          {% if f.errors %}
-          <p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>
-          {% endif %}
-        </div>
-        {% endwith %}
-        {% endif %}
         {% endfor %}
       </div>
     </div>
 
-    <!-- Identitas Tambahan -->
-    <div class="space-y-4">
-      <h2 class="text-lg font-semibold text-gray-800">Identitas Tambahan</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-        {% for field_name in identity_extra_fields %} {% with
-        f=form|get_field:field_name %}
-        <div>
-          <label class="block text-gray-600 mb-1 text-xs font-medium"
-            >{{ f.label }}</label
-          >
-          {{ f }} {% if f.errors %}
-          <p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>
-          {% endif %}
-        </div>
-        {% endwith %} {% endfor %}
-      </div>
-    </div>
-
-    <!-- Kesehatan -->
-    <div class="space-y-4">
-      <h2 class="text-lg font-semibold text-gray-800">Kesehatan</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-        {% for field_name in health_fields %} {% with
-        f=form|get_field:field_name %}
-        <div>
-          <label class="block text-gray-600 mb-1 text-xs font-medium"
-            >{{ f.label }}</label
-          >
-          {{ f }} {% if f and f.errors %}
-          <p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>
-          {% endif %}
-        </div>
-        {% endwith %} {% endfor %}
-      </div>
-    </div>
-
-    <!-- Minat & Prestasi -->
-    <div class="space-y-4">
-      <h2 class="text-lg font-semibold text-gray-800">Minat & Prestasi</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-        {% for category in interest_categories %}
-        <div class="border border-gray-200 rounded-lg p-4 space-y-2">
-          <p
-            class="font-semibold text-gray-700 text-xs uppercase tracking-wide"
-          >
-            {{ category.name }}
-          </p>
-          <div class="space-y-1">
+    <div class="space-y-5">
+      <h2 class="block-section-title"><i class="fas fa-graduation-cap text-primary-500 mr-1.5"></i> AKADEMIK</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm bg-surface-alt/50 p-6 rounded-2xl border border-border">
+        {% for field_name in academic_fields %} 
+        {% if field_name == 'institution_custom' or field_name == 'faculty_custom' or field_name == 'major_custom' %}
+        {% elif field_name == 'institution' or field_name == 'faculty' or field_name == 'major' %}
+          {% with f=form|get_field:field_name %}
+           <div x-data="{ showCustom: $el.querySelector('select').value === 'other' }">
+             <label class="block-label">{{ f.label }}</label>
+             <div x-on:change="showCustom = $event.target.value === 'other'">
+               {{ f }}
+             </div>
+             {% if f.errors %}
+             <p class="text-xs text-error font-bold mt-1.5 flex items-center gap-1"><i class="fas fa-exclamation-circle"></i> {{ f.errors.0 }}</p>
+             {% endif %}
+             
+             {% if field_name == 'institution' %}
+             {% with cf=form|get_field:"institution_custom" %}
+             <div x-show="showCustom" x-cloak class="mt-3 p-3 bg-surface rounded-xl border border-primary-200">
+               <label class="block-label text-primary-700">{{ cf.label }} (Isi Sendiri)</label>
+               {{ cf }}
+               {% if cf.errors %}
+               <p class="text-xs text-error font-bold mt-1.5 flex items-center gap-1"><i class="fas fa-exclamation-circle"></i> {{ cf.errors.0 }}</p>
+               {% endif %}
+             </div>
+             {% endwith %}
+             {% elif field_name == 'faculty' %}
+             {% with cf=form|get_field:"faculty_custom" %}
+             <div x-show="showCustom" x-cloak class="mt-3 p-3 bg-surface rounded-xl border border-primary-200">
+               <label class="block-label text-primary-700">{{ cf.label }} (Isi Sendiri)</label>
+               {{ cf }}
+               {% if cf.errors %}
+               <p class="text-xs text-error font-bold mt-1.5 flex items-center gap-1"><i class="fas fa-exclamation-circle"></i> {{ cf.errors.0 }}</p>
+               {% endif %}
+             </div>
+             {% endwith %}
+             {% elif field_name == 'major' %}
+             {% with cf=form|get_field:"major_custom" %}
+             <div x-show="showCustom" x-cloak class="mt-3 p-3 bg-surface rounded-xl border border-primary-200">
+               <label class="block-label text-primary-700">{{ cf.label }} (Isi Sendiri)</label>
+               {{ cf }}
+               {% if cf.errors %}
+               <p class="text-xs text-error font-bold mt-1.5 flex items-center gap-1"><i class="fas fa-exclamation-circle"></i> {{ cf.errors.0 }}</p>
+               {% endif %}
+             </div>
+             {% endwith %}
+             {% endif %}
+           </div>
+          {% endwith %}
+        {% else %}
+          {% with f=form|get_field:field_name %}
+          <div>
+            <label class="block-label">{{ f.label }}</label>
+            {{ f }}
+            {% if f.errors %}
+            <p class="text-xs text-error font-bold mt-1.5 flex items-center gap-1"><i class="fas fa-exclamation-circle"></i> {{ f.errors.0 }}</p>
+            {% endif %}
+          </div>
+          {% endwith %}
+        {% endif %}
+        {% endfor %}
+       </div>
+     </div>
+ 
+     <div class="space-y-5">
+       <h2 class="block-section-title"><i class="fas fa-address-card text-primary-500 mr-1.5"></i> IDENTITAS TAMBAHAN</h2>
+       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm bg-surface-alt/50 p-6 rounded-2xl border border-border">
+         {% for field_name in identity_extra_fields %}
+           {% with f=form|get_field:field_name %}
+           <div>
+             <label class="block-label">{{ f.label }}</label>
+             {{ f }}
+             {% if f.errors %}
+               <p class="text-xs text-error font-bold mt-1.5 flex items-center gap-1"><i class="fas fa-exclamation-circle"></i> {{ f.errors.0 }}</p>
+             {% endif %}
+           </div>
+           {% endwith %}
+         {% endfor %}
+       </div>
+     </div>
+ 
+     <div class="space-y-5">
+       <h2 class="block-section-title"><i class="fas fa-heartbeat text-primary-500 mr-1.5"></i> KESEHATAN</h2>
+       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm bg-surface-alt/50 p-6 rounded-2xl border border-border">
+         {% for field_name in health_fields %}
+           {% with f=form|get_field:field_name %}
+           <div>
+             <label class="block-label">{{ f.label }}</label>
+             {{ f }}
+             {% if f and f.errors %}
+               <p class="text-xs text-error font-bold mt-1.5 flex items-center gap-1"><i class="fas fa-exclamation-circle"></i> {{ f.errors.0 }}</p>
+             {% endif %}
+           </div>
+           {% endwith %}
+         {% endfor %}
+       </div>
+     </div>
+ 
+     <div class="space-y-5">
+       <h2 class="block-section-title"><i class="fas fa-star text-primary-500 mr-1.5"></i> MINAT & PRESTASI</h2>
+       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm bg-surface-alt/50 p-6 rounded-2xl border border-border">
+         {% for category in interest_categories %}
+         <div class="bg-surface p-5 rounded-xl border border-border shadow-sm space-y-3">
+           <p class="block-label text-primary-600 mb-2 border-b border-border/50 pb-2">
+             {{ category.name }}
+           </p>
+          <div class="space-y-2">
             {% for interest in category.interests.all %}
             <div>
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="interest_ids"
-                  value="{{ interest.pk }}"
-                  class="rounded border-gray-300 text-primary focus:ring-primary"
-                  {%
-                  if
-                  interest.pk
-                  in
-                  selected_interest_ids
-                  %}checked{%
-                  endif
-                  %}
-                />
-                <span>{{ interest.name }}</span>
-              </label>
-              {% if interest.allow_custom %}
-              <input
-                type="text"
-                name="custom_interest_{{ interest.pk }}"
-                placeholder="Tuliskan minat Anda..."
-                value="{{ student_interest_customs|get_item:interest.pk|default:'' }}"
-                class="mt-1 ml-6 w-11/12 px-3 py-1.5 text-xs border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-500"
-              />
-              {% endif %}
+               <label class="flex items-center gap-3 cursor-pointer group">
+                   <input
+                     type="checkbox"
+                     name="interest_ids"
+                     value="{{ interest.pk }}"
+                     class="accent-primary-600 w-4 h-4 rounded border-border text-primary-600 focus:ring-primary-500"
+                     {% if interest.pk in selected_interest_ids %}checked{% endif %}
+                   />
+                   <span class="text-text-secondary font-medium group-hover:text-primary-700 transition-colors">{{ interest.name }}</span>
+                 </label>
+                 {% if interest.allow_custom %}
+                 <input
+                   type="text"
+                   name="custom_interest_{{ interest.pk }}"
+                   placeholder="Tuliskan detail spesifik..."
+                   value="{{ student_interest_customs|get_item:interest.pk|default:'' }}"
+                   class="mt-2 ml-7 w-11/12 block-input text-xs py-2 bg-surface-alt"
+                 />
+                 {% endif %}
             </div>
             {% endfor %}
           </div>
@@ -219,98 +201,87 @@ endblock %} {% block content %}
       </div>
     </div>
 
-    <!-- Riwayat Organisasi -->
-    <div class="space-y-4">
-      <h2 class="text-lg font-semibold text-gray-800">Riwayat Organisasi</h2>
-      <div>
+    <div class="space-y-5">
+      <h2 class="block-section-title"><i class="fas fa-users text-primary-500 mr-1.5"></i> RIWAYAT ORGANISASI</h2>
+      <div class="bg-surface-alt/50 p-6 rounded-2xl border border-border">
         {% with f=form|get_field:organization_field %}
-        <label class="block text-gray-600 mb-1 text-xs font-medium"
-          >{{ f.label }}</label
-        >
-        {{ f }} {% if f and f.errors %}
-        <p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>
-        {% endif %} {% endwith %}
+        <label class="block-label">{{ f.label }}</label>
+         {{ f }} {% if f and f.errors %}
+         <p class="text-xs text-error font-bold mt-1.5 flex items-center gap-1"><i class="fas fa-exclamation-circle"></i> {{ f.errors.0 }}</p>
+         {% endif %} {% endwith %}
       </div>
     </div>
 
-    <!-- Informasi Keuangan -->
-    <div class="space-y-4">
-      <h2 class="text-lg font-semibold text-gray-800">Informasi Keuangan</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+    <div class="space-y-5">
+      <h2 class="block-section-title"><i class="fas fa-wallet text-primary-500 mr-1.5"></i> INFORMASI KEUANGAN</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm bg-surface-alt/50 p-6 rounded-2xl border border-border">
         {% with f=form|get_field:"education_funding" %}
-        <div>
-          <label class="block text-gray-600 mb-1 text-xs font-medium"
-            >{{ f.label }}</label
-          >
-          {{ f }} {% if f.errors %}
-          <p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>
-          {% endif %}
-        </div>
-        {% endwith %} {% with f=form|get_field:"scholarship_source" %}
-        <div>
-          <label class="block text-gray-600 mb-1 text-xs font-medium"
-            >{{ f.label }}</label
-          >
-          {{ f }} {% if f.errors %}
-          <p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>
-          {% endif %}
-        </div>
-        {% endwith %} {% with f=form|get_field:"living_cost" %}
-        <div>
-          <label class="block text-gray-600 mb-1 text-xs font-medium"
-            >{{ f.label }}</label
-          >
-          {{ f }} {% if f.errors %}
-          <p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>
-          {% endif %}
-        </div>
-        {% endwith %} {% with f=form|get_field:"monthly_income" %}
-        <div>
-          <label class="block text-gray-600 mb-1 text-xs font-medium"
-            >{{ f.label }}</label
-          >
-          {{ f }} {% if f.errors %}
-          <p class="text-xs text-red-600 mt-1">{{ f.errors.0 }}</p>
-          {% endif %}
-        </div>
-        {% endwith %}
+         <div>
+           <label class="block-label">{{ f.label }}</label>
+           {{ f }} {% if f.errors %}
+           <p class="text-xs text-error font-bold mt-1.5 flex items-center gap-1"><i class="fas fa-exclamation-circle"></i> {{ f.errors.0 }}</p>
+           {% endif %}
+         </div>
+         {% endwith %} {% with f=form|get_field:"scholarship_source" %}
+         <div>
+           <label class="block-label">{{ f.label }}</label>
+           {{ f }} {% if f.errors %}
+           <p class="text-xs text-error font-bold mt-1.5 flex items-center gap-1"><i class="fas fa-exclamation-circle"></i> {{ f.errors.0 }}</p>
+           {% endif %}
+         </div>
+         {% endwith %} {% with f=form|get_field:"living_cost" %}
+         <div>
+           <label class="block-label">{{ f.label }}</label>
+           {{ f }} {% if f.errors %}
+           <p class="text-xs text-error font-bold mt-1.5 flex items-center gap-1"><i class="fas fa-exclamation-circle"></i> {{ f.errors.0 }}</p>
+           {% endif %}
+         </div>
+         {% endwith %} {% with f=form|get_field:"monthly_income" %}
+         <div>
+           <label class="block-label">{{ f.label }}</label>
+           {{ f }} {% if f.errors %}
+           <p class="text-xs text-error font-bold mt-1.5 flex items-center gap-1"><i class="fas fa-exclamation-circle"></i> {{ f.errors.0 }}</p>
+           {% endif %}
+         </div>
+         {% endwith %}
       </div>
     </div>
 
-    <div class="flex flex-wrap justify-end gap-3 pt-4 border-t">
-      <button
-        type="submit"
-        name="action"
-        value="save_draft"
-        class="px-5 py-2.5 rounded bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium"
-        x-bind:disabled="submitting"
-      >
-        Simpan Draft
-      </button>
-      <button
-        type="submit"
-        name="action"
-        value="save_back"
-        class="px-5 py-2.5 rounded bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium"
-        x-bind:disabled="submitting"
-      >
-        Simpan & Kembali
-      </button>
-      <button
-        type="submit"
-        name="action"
-        value="save"
-        class="px-5 py-2.5 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
-        x-bind:disabled="submitting"
-      >
-        Simpan
-      </button>
+    <hr class="block-divider my-8">
+
+    <div class="flex flex-wrap justify-end gap-3">
+       <button
+         type="submit"
+         name="action"
+         value="save_draft"
+         class="block-btn py-3 px-6 shadow-md" style="background-color:var(--color-warning);color:#fff;"
+         x-bind:disabled="submitting"
+       >
+         <i class="fas fa-save mr-1.5"></i> SIMPAN DRAFT
+       </button>
+       <button
+         type="submit"
+         name="action"
+         value="save_back"
+         class="block-btn block-btn-outline py-3 px-6 shadow-sm bg-surface"
+         x-bind:disabled="submitting"
+       >
+         <i class="fas fa-arrow-left mr-1.5"></i> SIMPAN & KEMBALI
+       </button>
+       <button
+         type="submit"
+         name="action"
+         value="save"
+         class="block-btn block-btn-primary py-3 px-8 shadow-lg"
+         x-bind:disabled="submitting"
+       >
+         <i class="fas fa-check mr-1.5"></i> SIMPAN PERUBAHAN
+       </button>
     </div>
   </form>
 </div>
 
 <script>
-
   (function () {
     const form = document.getElementById("student-edit-form");
     if (!form) return;

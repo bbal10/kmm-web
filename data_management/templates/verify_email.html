@@ -1,139 +1,48 @@
 {% extends 'base.html' %}
 {% load static %}
-
 {% block title %}Verifikasi Email - KMM Mesir{% endblock %}
-
 {% block wrapper %}
-    <div class="min-h-screen bg-white flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div class="max-w-md w-full space-y-8">
-            <div>
-                <div class="mx-auto h-20 w-20 flex items-center justify-center rounded-full bg-primary">
-                    <svg class="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                    </svg>
-                </div>
-                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                    Verifikasi Email
-                </h2>
-                <p class="mt-2 text-center text-sm text-gray-600">
-                    Kode verifikasi 6 digit telah dikirim ke
-                </p>
-                <p class="text-center text-sm font-medium text-gray-800">
-                    {{ email }}
-                </p>
-            </div>
-
-            <!-- Django messages -->
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="rounded-md px-4 py-3
-                        {% if message.tags == 'error' %}bg-red-100 border border-red-400 text-red-700
-                        {% elif message.tags == 'success' %}bg-green-100 border border-green-400 text-green-700
-                        {% elif message.tags == 'warning' %}bg-yellow-100 border border-yellow-400 text-yellow-700
-                        {% else %}bg-blue-100 border border-blue-400 text-blue-700{% endif %}">
-                        <p>{{ message }}</p>
-                    </div>
-                {% endfor %}
-            {% endif %}
-
-            <!-- Verification code form -->
-            <form class="mt-8 space-y-6" method="post" action="{% url 'data_management:verify_email' %}">
-                {% csrf_token %}
-
-                <div>
-                    <label for="id_code" class="block text-sm font-medium text-gray-700 mb-1">
-                        Kode Verifikasi
-                    </label>
-                    <input
-                        id="id_code"
-                        name="code"
-                        type="text"
-                        inputmode="numeric"
-                        pattern="[0-9]{6}"
-                        maxlength="6"
-                        required
-                        autofocus
-                        autocomplete="one-time-code"
-                        class="appearance-none block w-full px-3 py-3 border border-gray-300 placeholder-gray-500
-                               text-gray-900 rounded-md text-center text-2xl tracking-widest
-                               focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
-                        placeholder="000000"
-                    >
-                    <p class="mt-2 text-xs text-gray-500">Masukkan kode 6 digit dari email Anda.</p>
-                </div>
-
-                <div>
-                    <button type="submit"
-                            class="group relative w-full flex justify-center py-2 px-4 border border-transparent
-                                   text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-dark
-                                   focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary
-                                   transition duration-150 ease-in-out">
-                        Verifikasi Email
-                    </button>
-                </div>
-            </form>
-
-            <!-- Resend code section -->
-            <div class="text-center">
-                {% if can_resend %}
-                    <form method="post" action="{% url 'data_management:resend_verification_code' %}">
-                        {% csrf_token %}
-                        <button type="submit"
-                                class="font-medium text-primary hover:text-primary-dark text-sm">
-                            Kirim ulang kode verifikasi
-                        </button>
-                    </form>
-                {% else %}
-                    <p class="text-sm text-gray-500">
-                        Kirim ulang tersedia dalam
-                        <span id="resend-countdown" class="font-medium">{{ seconds_until_resend }}</span> detik.
-                    </p>
-                {% endif %}
-            </div>
-
-            <div class="text-center text-sm text-gray-600">
-                <a href="{% url 'data_management:login' %}" class="font-medium text-primary hover:text-primary-dark">
-                    Kembali ke halaman login
-                </a>
-            </div>
-
-            <div class="text-center">
-                <div class="text-sm text-gray-600">
-                    <p>© 2025 Kesepakan Mahasiswa Minangkabau Mesir</p>
-                </div>
-            </div>
-        </div>
+<div class="min-h-screen flex items-center justify-center bg-bg p-4 relative overflow-hidden">
+  <!-- Subtle vibrant background glow (Success/Green mix) -->
+  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-success-light rounded-full blur-[100px] opacity-40 pointer-events-none"></div>
+  
+  <div class="w-full max-w-md motion-fade-up relative z-10">
+    <div class="block-card p-8 sm:p-10 shadow-xl border-white/50 bg-white/80 backdrop-blur-xl text-center">
+      <div class="w-20 h-20 bg-gradient-to-br from-success to-success-dark shadow-lg shadow-success/30 mx-auto flex items-center justify-center rounded-full mb-6">
+        <i class="fas fa-paper-plane text-3xl text-white"></i>
+      </div>
+      
+      <h1 class="text-3xl font-extrabold text-text-primary tracking-tight font-sans">Periksa Email Anda</h1>
+      <p class="mt-3 text-sm text-text-muted font-medium leading-relaxed px-2">
+        Kami telah mengirimkan tautan verifikasi ke email Anda. Silakan klik tautan tersebut untuk menyelesaikan proses pendaftaran.
+      </p>
+      
+      <div class="mt-8 space-y-3">
+        <a href="{% url 'data_management:login' %}" class="block-btn block-btn-primary w-full py-3 text-sm font-bold shadow-lg motion-press rounded-xl">
+          KEMBALI KE LOGIN
+        </a>
+        <button onclick="resendEmail()" class="block-btn block-btn-outline w-full py-3 text-sm font-bold rounded-xl hover:bg-surface-alt transition-colors">
+          KIRIM ULANG EMAIL
+        </button>
+      </div>
+      
+      <div class="mt-6 p-4 bg-surface-alt rounded-xl border border-border">
+        <p class="text-xs text-text-muted font-medium flex items-center justify-center gap-2">
+          <i class="fas fa-info-circle text-primary-500"></i>
+          Tidak menerima email? Periksa folder spam.
+        </p>
+      </div>
     </div>
-
-    {% if not can_resend and seconds_until_resend > 0 %}
-    <script>
-        (function () {
-            var countdown = parseInt("{{ seconds_until_resend }}", 10);
-            var el = document.getElementById("resend-countdown");
-            if (!el || countdown <= 0) return;
-            var timer = setInterval(function () {
-                countdown -= 1;
-                if (countdown <= 0) {
-                    clearInterval(timer);
-                    location.reload();
-                } else {
-                    el.textContent = countdown;
-                }
-            }, 1000);
-        })();
-    </script>
-    {% endif %}
+    
+    <p class="text-center text-sm text-text-muted mt-8 font-medium">&copy; 2026 KMM MESIR</p>
+  </div>
+</div>
 {% endblock wrapper %}
-
-{% block extra_css %}
-    <style>
-        .bg-primary { background-color: #3B82F6; }
-        .text-primary { color: #3B82F6; }
-        .hover\:text-primary-dark:hover { color: #2563EB; }
-        .bg-primary:hover, .hover\:bg-primary-dark:hover { background-color: #2563EB; }
-        .focus\:ring-primary:focus { --tw-ring-color: #3B82F6; }
-        .focus\:border-primary:focus { border-color: #3B82F6; }
-    </style>
-{% endblock extra_css %}
-
+{% block extra_js %}
+<script>
+function resendEmail() {
+  // Placeholder for resend email functionality
+  alert('Fitur kirim ulang email akan segera tersedia');
+}
+</script>
+{% endblock %}

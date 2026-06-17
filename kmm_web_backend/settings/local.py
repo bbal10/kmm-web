@@ -110,10 +110,10 @@ LOGGING['handlers']['console']['level'] = 'DEBUG'
 LOGGING['root']['level'] = 'DEBUG'
 
 # ============================================================================
-# VITE - Use built files (set True jika mau pakai Vite dev server)
+# VITE - Hot reload via Vite dev server (respect env var, default False)
 # ============================================================================
 
-VITE_DEV_MODE = False
+VITE_DEV_MODE = os.environ.get('VITE_DEV_MODE', 'False').lower() in ('true', '1', 'yes')
 
 # ============================================================================
 # DJANGO DEBUG TOOLBAR (Optional)

@@ -17,5 +17,5 @@ def create_profile(sender, instance, created, **kwargs):
             gender='M',  # set default or logic as needed
             marital_status='single',
             degree_level='S1',
-            semester_level=1,
+            semester_level='1',
         )

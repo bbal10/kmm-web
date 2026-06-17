@@ -1,168 +1,134 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load widget_tweaks %}
-
 {% block title %}Dashboard - KMM Mesir{% endblock %}
-
 {% block navbar %}
-    {% include "navbar.html" %}
+{% include "navbar.html" %}
 {% endblock %}
-
 {% block sidebar %}
-    {% include "sidebar.html" %}
+{% include "sidebar.html" %}
 {% endblock %}
-
 {% block content %}
-<div class="p-6">
-    <div class="mb-6">
-        <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p class="text-gray-600 mt-2">Selamat datang di sistem manajemen KMM Mesir</p>
+<div class="p-6 md:p-8 space-y-8">
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-extrabold text-text-primary tracking-tight font-sans">Dashboard</h1>
+      <p class="text-text-muted text-sm mt-1 font-medium">Selamat datang di sistem manajemen KMM Mesir</p>
     </div>
-
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Total Mahasiswa</p>
-                    <p class="text-2xl font-bold text-gray-900">234</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-                        </svg>
-                    </div>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Mahasiswa Aktif</p>
-                    <p class="text-2xl font-bold text-gray-900">198</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <div class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
-                        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"></path>
-                        </svg>
-                    </div>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Iuran Terkumpul</p>
-                    <p class="text-2xl font-bold text-gray-900">Rp 45.2M</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center">
-                <div class="flex-shrink-0">
-                    <div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
-                        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"></path>
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.51-1.31c-.562-.649-1.413-1.076-2.353-1.253V5z" clip-rule="evenodd"></path>
-                        </svg>
-                    </div>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Tunggakan</p>
-                    <p class="text-2xl font-bold text-gray-900">Rp 3.8M</p>
-                </div>
-            </div>
-        </div>
+    <div class="flex gap-2">
+      <button class="block-btn block-btn-outline"><i class="fas fa-download mr-2"></i> Export</button>
+      <button class="block-btn block-btn-primary"><i class="fas fa-plus mr-2"></i> Tambah Mahasiswa</button>
     </div>
-
-    <!-- Content that demonstrates scrolling -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Recent Activities -->
-        <div class="bg-white rounded-lg shadow">
-            <div class="p-6 border-b border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900">Aktivitas Terbaru</h3>
-            </div>
-            <div class="p-6">
-                <div class="space-y-4">
-                    {% for i in "123456789012345678901234567890" %}
-                    <div class="flex items-start space-x-3">
-                        <div class="flex-shrink-0">
-                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path>
-                                    <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                        </div>
-                        <div class="min-w-0 flex-1">
-                            <p class="text-sm text-gray-900">
-                                Mahasiswa baru <span class="font-medium">Ahmad Rizki</span> telah mendaftar
-                            </p>
-                            <p class="text-xs text-gray-500">{{ forloop.counter }} menit yang lalu</p>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-
-        <!-- Latest Students -->
-        <div class="bg-white rounded-lg shadow">
-            <div class="p-6 border-b border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900">Mahasiswa Terbaru</h3>
-            </div>
-            <div class="p-6">
-                <div class="space-y-4">
-                    {% for i in "123456789012345678901234567890" %}
-                    <div class="flex items-center space-x-3">
-                        <img class="w-10 h-10 rounded-full" src="https://ui-avatars.com/api/?name=Student+{{ forloop.counter }}&background=3b82f6&color=fff" alt="">
-                        <div class="min-w-0 flex-1">
-                            <p class="text-sm font-medium text-gray-900">Student {{ forloop.counter }}</p>
-                            <p class="text-xs text-gray-500">Fakultas Teknik</p>
-                        </div>
-                        <div class="flex-shrink-0">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                Aktif
-                            </span>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
+  </div>
+  
+  <!-- Stat Cards with semantic variants -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 motion-stagger">
+    <div class="block-stat block-stat--info">
+      <div class="flex justify-between items-start mb-4">
+        <p class="text-xs font-bold text-text-muted tracking-wider uppercase">Total Mahasiswa</p>
+        <div class="p-2 bg-info-light text-info-dark rounded-lg"><i class="fas fa-users"></i></div>
+      </div>
+      <p class="text-4xl font-extrabold font-mono text-text-primary">234</p>
+      <p class="text-xs text-success mt-2 font-medium"><i class="fas fa-arrow-up mr-1"></i> 12% dari bulan lalu</p>
     </div>
-
-    <!-- More content to demonstrate scrolling -->
-    <div class="mt-8">
-        <div class="bg-white rounded-lg shadow">
-            <div class="p-6 border-b border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900">Data Lengkap untuk Testing Scroll</h3>
-            </div>
-            <div class="p-6">
-                <p class="text-gray-600 mb-4">Konten ini sengaja dibuat panjang untuk menguji fungsi scroll pada area content.</p>
-                {% for i in "12345678901234567890123456789012345678901234567890" %}
-                <div class="mb-4 p-4 bg-gray-50 rounded-lg">
-                    <h4 class="font-medium text-gray-900">Item {{ forloop.counter }}</h4>
-                    <p class="text-sm text-gray-600 mt-1">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                    </p>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
+    <div class="block-stat block-stat--success">
+      <div class="flex justify-between items-start mb-4">
+        <p class="text-xs font-bold text-text-muted tracking-wider uppercase">Mahasiswa Aktif</p>
+        <div class="p-2 bg-success-light text-success-dark rounded-lg"><i class="fas fa-user-check"></i></div>
+      </div>
+      <p class="text-4xl font-extrabold font-mono text-text-primary">198</p>
+      <p class="text-xs text-text-subtle mt-2 font-medium">85% dari total</p>
     </div>
+    <div class="block-stat block-stat--warning">
+      <div class="flex justify-between items-start mb-4">
+        <p class="text-xs font-bold text-text-muted tracking-wider uppercase">Iuran Terkumpul</p>
+        <div class="p-2 bg-warning-light text-warning-dark rounded-lg"><i class="fas fa-wallet"></i></div>
+      </div>
+      <p class="text-3xl font-extrabold font-mono text-text-primary">Rp 45.2M</p>
+      <p class="text-xs text-success mt-2 font-medium"><i class="fas fa-arrow-up mr-1"></i> Rp 2M minggu ini</p>
+    </div>
+    <div class="block-stat block-stat--error">
+      <div class="flex justify-between items-start mb-4">
+        <p class="text-xs font-bold text-text-muted tracking-wider uppercase">Tunggakan</p>
+        <div class="p-2 bg-error-light text-error-dark rounded-lg"><i class="fas fa-exclamation-circle"></i></div>
+      </div>
+      <p class="text-3xl font-extrabold font-mono text-text-primary">Rp 3.8M</p>
+      <p class="text-xs text-error mt-2 font-medium"><i class="fas fa-arrow-up mr-1"></i> Rp 500k minggu ini</p>
+    </div>
+  </div>
+  
+  <!-- Activity and Recent Students -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="block-card">
+      <div class="px-6 py-4 border-b border-border flex justify-between items-center bg-surface-alt/50">
+        <h3 class="font-sans text-sm font-bold text-text-primary tracking-wide">AKTIVITAS TERBARU</h3>
+        <button class="text-xs text-primary-600 font-semibold hover:text-primary-700">Lihat Semua</button>
+      </div>
+      <div class="p-6">
+        <div class="space-y-5 motion-stagger">
+          {% for i in "12345" %}
+          <div class="flex items-start gap-4 motion-fade-up">
+            <div class="w-8 h-8 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center flex-shrink-0">
+              <i class="fas fa-user-plus text-xs"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm text-text-primary font-medium">
+                Mahasiswa baru <span class="font-bold text-primary-700">Ahmad Rizki</span> telah mendaftar
+              </p>
+              <p class="text-xs text-text-muted mt-1 font-mono">{{ forloop.counter }} menit lalu</p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    <div class="block-card">
+      <div class="px-6 py-4 border-b border-border flex justify-between items-center bg-surface-alt/50">
+        <h3 class="font-sans text-sm font-bold text-text-primary tracking-wide">MAHASISWA TERBARU</h3>
+        <button class="text-xs text-primary-600 font-semibold hover:text-primary-700">Lihat Semua</button>
+      </div>
+      <div class="p-6">
+        <div class="space-y-4 motion-stagger">
+          {% for i in "12345" %}
+          <div class="flex items-center gap-4 motion-fade-up p-2 hover:bg-surface-alt rounded-lg transition-colors cursor-pointer">
+            <img class="w-10 h-10 rounded-full border border-border" src="https://ui-avatars.com/api/?name=S{{ forloop.counter }}&background=E0F2FE&color=0369A1&size=40" alt="Avatar Student {{ forloop.counter }}" loading="lazy">
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-bold text-text-primary">Student {{ forloop.counter }}</p>
+              <p class="text-xs text-text-muted">Fakultas Teknik</p>
+            </div>
+            <span class="block-badge block-badge--success shadow-sm">AKTIF</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Complete Data Section -->
+  <div class="block-card">
+    <div class="px-6 py-4 border-b border-border bg-surface-alt/50">
+      <h3 class="font-sans text-sm font-bold text-text-primary tracking-wide">OVERVIEW STATUS</h3>
+    </div>
+    <div class="p-6">
+      <p class="text-sm text-text-muted mb-6 font-medium">Monitoring pergerakan data mahasiswa bulan ini.</p>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {% for i in "123456" %}
+        <div class="p-4 bg-surface rounded-xl border border-border hover:border-primary-300 transition-colors shadow-sm group">
+          <h4 class="font-bold text-text-primary text-sm group-hover:text-primary-600 transition-colors">Program {{ forloop.counter }}</h4>
+          <p class="text-xs text-text-muted mt-2 leading-relaxed">
+            Status registrasi reguler dan pembaruan data akademis.
+          </p>
+          <div class="mt-4 flex items-center justify-between text-xs font-semibold text-primary-600">
+            <span>Progress</span>
+            <span>75%</span>
+          </div>
+          <div class="w-full bg-surface-dim h-1.5 rounded-full mt-2 overflow-hidden">
+            <div class="bg-primary-500 h-1.5 rounded-full w-3/4"></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

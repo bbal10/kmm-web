@@ -1,0 +1,321 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+@import "tailwindcss";
+
+@source "../../../**/**/**/**/*.{html,py,js}";
+
+@theme {
+    --color-primary: #7C3AED;
+    --color-primary-dark: #6D28D9;
+    --color-primary-light: #A78BFA;
+    --color-secondary: #A78BFA;
+    --color-cta: #F97316;
+    --color-cta-dark: #EA580C;
+    --color-cta-light: #FDBA74;
+    --color-surface: #FFFFFF;
+    --color-surface-alt: #F5F3FF;
+    --color-surface-dim: #EDE9FE;
+    --color-bg: #FAF5FF;
+    --color-text: #4C1D95;
+    --color-text-muted: #6D28D9;
+    --color-text-subtle: #8B5CF6;
+    --color-border: #DDD6FE;
+    --color-block-blue: #3B82F6;
+    --color-block-green: #22C55E;
+    --color-block-amber: #F59E0B;
+    --color-block-rose: #F43F5E;
+    --color-block-cyan: #06B6D4;
+    --color-block-orange: #F97316;
+    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+body {
+    font-family: var(--font-sans);
+    background-color: var(--color-bg);
+    color: var(--color-text);
+}
+
+/* === VIBRANT FLAT DASHBOARD SYSTEM (total redesign) ===
+   Pure flat: no shadows, no clay lift, no thick borders.
+   Bold vibrant colors, clean lines, simple hovers (color/opacity), fast 150-200ms transitions.
+   Perfect for SaaS dashboards, education admin, student management.
+*/
+
+:root {
+    --flat-radius: 8px;
+    --flat-radius-sm: 6px;
+    --flat-border: 1px;
+    --motion-ease: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.notifyx-success {
+    @apply bg-block-green text-white;
+}
+.notifyx-success::before {
+    font: var(--fa-font-solid);
+    content: "\f058";
+}
+.notifyx-error {
+    @apply bg-block-rose text-white;
+}
+.notifyx-error::before {
+    font: var(--fa-font-solid);
+    content: "\f057";
+}
+
+.sidebar-transition {
+    transition: transform 0.2s var(--motion-ease);
+}
+
+input, select, textarea {
+    font-family: var(--font-sans);
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: -2px;
+}
+
+@layer utilities {
+    /* === FLAT VIBRANT CARDS & BLOCKS === */
+    .block-card {
+        background-color: var(--color-surface);
+        border: var(--flat-border) solid var(--color-border);
+        border-radius: var(--flat-radius);
+        transition: border-color 0.15s var(--motion-ease),
+                    background-color 0.15s var(--motion-ease);
+    }
+
+    .block-card:hover {
+        border-color: var(--color-primary-light);
+    }
+
+    .block-card-primary {
+        background-color: var(--color-primary);
+        color: #FFFFFF;
+        border: var(--flat-border) solid var(--color-primary-dark);
+        border-radius: var(--flat-radius);
+        transition: background-color 0.15s var(--motion-ease),
+                    border-color 0.15s var(--motion-ease);
+    }
+
+    .block-card-primary:hover {
+        background-color: var(--color-primary-dark);
+    }
+
+    .block-stat {
+        background-color: var(--color-surface);
+        border: var(--flat-border) solid var(--color-border);
+        border-left: 4px solid var(--color-primary);
+        border-radius: var(--flat-radius);
+        padding: 1rem 1.25rem;
+        transition: border-color 0.15s var(--motion-ease);
+    }
+
+    .block-stat:hover {
+        border-color: var(--color-primary-light);
+    }
+
+    /* Normal flat buttons — clean, standard look */
+    .block-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        font-size: 0.875rem;
+        line-height: 1.25rem;
+        border: 1px solid transparent;
+        border-radius: var(--flat-radius-sm);
+        cursor: pointer;
+        transition: background-color 0.15s var(--motion-ease),
+                    border-color 0.15s var(--motion-ease),
+                    color 0.15s var(--motion-ease);
+    }
+
+    .block-btn-primary {
+        background-color: var(--color-primary);
+        color: #FFFFFF;
+    }
+
+    .block-btn-primary:hover {
+        background-color: var(--color-primary-dark);
+    }
+
+    .block-btn-cta {
+        background-color: var(--color-cta);
+        color: #FFFFFF;
+    }
+
+    .block-btn-cta:hover {
+        background-color: var(--color-cta-dark);
+    }
+
+    .block-btn-outline {
+        background-color: transparent;
+        color: var(--color-primary);
+        border-color: var(--color-primary);
+    }
+
+    .block-btn-outline:hover {
+        background-color: var(--color-primary);
+        color: #FFFFFF;
+    }
+
+    .block-btn-ghost {
+        background-color: transparent;
+        color: var(--color-text-muted);
+        border-color: var(--color-border);
+    }
+
+    .block-btn-ghost:hover {
+        background-color: var(--color-surface-alt);
+        border-color: var(--color-primary-light);
+    }
+
+    .block-btn-danger {
+        background-color: var(--color-block-rose);
+        color: #FFFFFF;
+    }
+
+    .block-btn-danger:hover {
+        background-color: #E11D48;
+    }
+
+    .block-btn-success {
+        background-color: var(--color-block-green);
+        color: #FFFFFF;
+    }
+
+    .block-btn-success:hover {
+        background-color: #16A34A;
+    }
+
+    /* Flat inputs */
+    .block-input {
+        width: 100%;
+        padding: 0.625rem 0.875rem;
+        border: var(--flat-border) solid var(--color-border);
+        border-radius: var(--flat-radius-sm);
+        background-color: var(--color-surface);
+        font-size: 0.875rem;
+        transition: border-color 0.15s var(--motion-ease),
+                    box-shadow 0.15s var(--motion-ease);
+    }
+
+    .block-input:focus {
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+        outline: none;
+    }
+
+    .block-label {
+        display: block;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 0.25rem;
+    }
+
+    .block-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.0625rem 0.625rem;
+        font-size: 0.625rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        border: 1px solid transparent;
+        border-radius: 4px;
+    }
+
+    .block-divider {
+        border: none;
+        border-top: 1px solid var(--color-border);
+        margin: 0;
+    }
+
+    .block-section-title {
+        font-family: var(--font-mono);
+        font-size: 0.625rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--color-primary);
+        margin-bottom: 0.625rem;
+        padding-bottom: 0.25rem;
+        border-bottom: 2px solid var(--color-primary);
+        display: inline-block;
+    }
+
+    /* Flat modules for dashboard sections */
+    .block-module {
+        background-color: var(--color-surface);
+        border: var(--flat-border) solid var(--color-border);
+        border-radius: var(--flat-radius);
+        padding: 1rem;
+    }
+
+    /* === SIMPLE FLAT MOTION (no lift, no 3D) === */
+    .motion-fade-up {
+        animation: fadeUpFlat 0.25s var(--motion-ease) backwards;
+    }
+
+    @keyframes fadeUpFlat {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .motion-stagger > * {
+        animation: fadeUpFlat 0.22s var(--motion-ease) backwards;
+    }
+
+    .motion-stagger > *:nth-child(1) { animation-delay: 30ms; }
+    .motion-stagger > *:nth-child(2) { animation-delay: 60ms; }
+    .motion-stagger > *:nth-child(3) { animation-delay: 90ms; }
+    .motion-stagger > *:nth-child(4) { animation-delay: 120ms; }
+
+    .motion-press:active {
+        transform: scale(0.985);
+    }
+
+    .block-table-row {
+        transition: background-color 0.1s ease-out;
+    }
+
+    .block-table-row:hover {
+        background-color: var(--color-surface-alt);
+    }
+
+    /* Flat navbar / sidebar */
+    .nav-flat {
+        background-color: var(--color-primary);
+        border-bottom: 2px solid var(--color-primary-dark);
+    }
+
+    .sidebar-flat {
+        background-color: var(--color-surface);
+        border-right: 1px solid var(--color-border);
+    }
+
+    .dense-grid {
+        gap: 0.875rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

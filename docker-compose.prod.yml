@@ -7,6 +7,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-kmm_web_db}
       POSTGRES_USER: ${POSTGRES_USER:-kmm_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    # Expose only for debugging / direct DB access from host (remove in high-security setups)
     ports:
       - "5432:5432"
     healthcheck:
@@ -17,10 +18,11 @@ services:
 
   redis:
     image: redis:7-alpine
-    ports:
-      - "6379:6379"
     volumes:
       - redis_data:/data
+    # Expose only for debugging (remove in production if not needed)
+    ports:
+      - "6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -29,10 +31,10 @@ services:
 
   web:
     build: ./
-    # Using Gunicorn for production instead of Django dev server
+    # Production WSGI server - only exposed internally to nginx
     command: uv run gunicorn kmm_web_backend.wsgi:application --bind 0.0.0.0:8000 --workers 4
-    ports:
-      - "${WEB_PORT:-8080}:8000"
+    expose:
+      - "8000"
     env_file:
       - ./.env
     environment:
@@ -40,11 +42,34 @@ services:
       REDIS_URL: redis://redis:6379/0
       DJANGO_SETTINGS_MODULE: "kmm_web_backend.settings.production"
       VITE_DEV_MODE: "False"
+    volumes:
+      # Share media (user uploads) and staticfiles with nginx
+      - ./media:/app/media
+      - ./staticfiles:/app/staticfiles
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+    restart: unless-stopped
+
+  # Nginx reverse proxy - serves on standard ports 80/443
+  # This allows clean domain access (yourdomain.com instead of :8080)
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      # Read-only access to static and media files
+      - ./staticfiles:/app/staticfiles:ro
+      - ./media:/app/media:ro
+    depends_on:
+      - web
+    restart: unless-stopped
 
 volumes:
   postgres_data:

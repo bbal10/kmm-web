@@ -46,7 +46,7 @@ fi
 
 # Create required directories
 echo "📁 Creating required directories..."
-mkdir -p logs backups nginx/ssl media
+mkdir -p logs backups nginx/ssl media staticfiles
 
 # Set permissions
 echo "🔒 Setting permissions..."
@@ -60,13 +60,26 @@ docker compose -f docker-compose.prod.yml build --no-cache
 echo "🚀 Starting services..."
 docker compose -f docker-compose.prod.yml up -d
 
-# Wait for services to be healthy
+# Wait for services (postgres/redis/web) to be healthy using healthchecks
 echo "⏳ Waiting for services to be healthy..."
-sleep 10
+if docker compose -f docker-compose.prod.yml up -d --wait --wait-timeout 120; then
+    echo "✅ All services healthy"
+else
+    echo "⚠️  Wait completed (some services may still be starting)"
+    sleep 5
+fi
 
-# Collect static files
-echo "📦 Collecting static files..."
-docker compose -f docker-compose.prod.yml exec -T web uv run python manage.py collectstatic --noinput
+# Verify web container is actually running before continuing
+WEB_RUNNING=$(docker compose -f docker-compose.prod.yml ps -q web | head -1)
+if [ -z "$WEB_RUNNING" ] || ! docker inspect "$WEB_RUNNING" --format '{{.State.Running}}' 2>/dev/null | grep -q true; then
+    echo "❌ ERROR: web container is not running"
+    echo "📝 Last logs from web:"
+    docker compose -f docker-compose.prod.yml logs --tail=100 web || true
+    exit 1
+fi
+
+# Note: migrate + collectstatic are performed inside the container entrypoint on startup.
+# No need to run them again here unless you want to force re-collection.
 
 # Check service status
 echo "📊 Service Status:"
@@ -80,10 +93,15 @@ docker compose -f docker-compose.prod.yml logs --tail=50
 echo ""
 echo "✅ Deployment Complete!"
 echo ""
-echo "🌐 Access your application:"
+echo "🌐 Access your application (via Nginx):"
 echo "   - Web: http://localhost"
 echo "   - Admin: http://localhost/admin"
 echo "   - Health: http://localhost/health/"
+echo ""
+echo "   If using a custom domain:"
+echo "   - Make sure ALLOWED_HOSTS in .env includes your domain"
+echo "   - Update server_name in nginx/conf.d/default.conf"
+echo "   - Point DNS A record to this server"
 echo ""
 echo "📋 Useful commands:"
 echo "   - View logs: docker compose -f docker-compose.prod.yml logs -f"

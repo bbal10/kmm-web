@@ -23,11 +23,13 @@ python -c 'from django.core.management.utils import get_random_secret_key; print
 docker-compose exec web python manage.py createsuperuser
 ```
 
-**Access your application:**
+**Access your application (via Nginx on port 80):**
 
 - 🌐 Web: http://localhost
 - 🔧 Admin: http://localhost/admin
 - 💚 Health: http://localhost/health/
+
+> Untuk domain custom: set `ALLOWED_HOSTS` dan update `server_name` di `nginx/conf.d/default.conf`
 
 📖 **Detailed guides:**
 

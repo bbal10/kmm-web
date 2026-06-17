@@ -83,7 +83,8 @@ CACHES = {
 }
 
 # HTTPS redirect
-SECURE_SSL_REDIRECT = True
+# Set SECURE_SSL_REDIRECT=False temporarily in .env if you don't have HTTPS yet
+SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', 'True').lower() == 'true'
 
 # Session security
 SESSION_COOKIE_SECURE = True
@@ -158,6 +159,11 @@ LOGGING = {
     },
 }
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# CSRF trusted origins (penting untuk domain + HTTPS)
+CSRF_TRUSTED_ORIGINS_ENV = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+if CSRF_TRUSTED_ORIGINS_ENV:
+    CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in CSRF_TRUSTED_ORIGINS_ENV.split(',') if origin.strip()]
 
 # ============================================================================
 # EMAIL - SMTP untuk production

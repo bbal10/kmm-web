@@ -30,7 +30,7 @@ from .base import *
 DEBUG = True
 
 # Secret key HARUS diset (minimal 50 karakter)
-SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = os.environ.get("SECRET_KEY")
 if not SECRET_KEY or len(SECRET_KEY) < 50:
     raise ValueError(
         "SECRET_KEY must be set and be at least 50 characters long in staging. "
@@ -42,23 +42,23 @@ if not SECRET_KEY or len(SECRET_KEY) < 50:
 # ============================================================================
 
 # Ambil dari environment variable, jika tidak ada gunakan '*'
-ALLOWED_HOSTS_ENV = os.environ.get('ALLOWED_HOSTS', '*')
-ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_ENV.split(',')]
+ALLOWED_HOSTS_ENV = os.environ.get("ALLOWED_HOSTS", "*")
+ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_ENV.split(",")]
 
 # ============================================================================
 # DATABASE - PostgreSQL via DATABASE_URL (sama seperti production)
 # ============================================================================
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL'),
+    "default": dj_database_url.config(
+        default=os.environ.get("DATABASE_URL"),
         conn_max_age=600,
         conn_health_checks=True,
     )
 }
 
 # Validasi database URL harus diset
-if not DATABASES['default']:
+if not DATABASES["default"]:
     raise ValueError(
         "DATABASE_URL must be set in staging environment. "
         "Format: postgresql://user:password@host:port/dbname"
@@ -69,8 +69,8 @@ if not DATABASES['default']:
 # ============================================================================
 
 CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
     }
 }
 
@@ -89,7 +89,7 @@ SECURE_HSTS_SECONDS = 0
 # ============================================================================
 
 # Gunakan console backend untuk testing, atau uncomment SMTP jika diperlukan
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # Uncomment jika ingin pakai SMTP di staging:
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -103,7 +103,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # STATIC FILES - Whitenoise untuk serving static files (sama seperti production)
 # ============================================================================
 
-STORAGES["staticfiles"]["BACKEND"] = "whitenoise.storage.CompressedStaticFilesStorage"
+# Hanya berlaku bila R2 TIDAK aktif; bila USE_R2=True, static di-serve dari R2.
+if not R2_ENABLED:
+    STORAGES["staticfiles"]["BACKEND"] = "whitenoise.storage.CompressedStaticFilesStorage"
 
 # ============================================================================
 # VITE CONFIGURATION - Production mode (use built assets)
@@ -116,49 +118,49 @@ VITE_DEV_MODE = False
 # ============================================================================
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {name} {process:d} {thread:d} {message}',
-            'style': '{',
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {name} {process:d} {thread:d} {message}",
+            "style": "{",
         },
-        'simple': {
-            'format': '{levelname} {asctime} {name} {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
+        "simple": {
+            "format": "{levelname} {asctime} {name} {message}",
+            "style": "{",
         },
     },
-    'root': {
-        'level': 'DEBUG',
-        'handlers': ['console'],
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
     },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': False,
+    "root": {
+        "level": "DEBUG",
+        "handlers": ["console"],
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
         },
-        'django.request': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': False,
+        "django.request": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+            "propagate": False,
         },
-        'django.security': {
-            'handlers': ['console'],
-            'level': 'WARNING',
-            'propagate': False,
+        "django.security": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
         },
-        'data_management': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': False,
+        "data_management": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+            "propagate": False,
         },
     },
 }

@@ -45,3 +45,29 @@ dev = [
     "isort>=5.12.0",
     "flake8>=6.0.0",
 ]
+
+[tool.black]
+line-length = 100
+target-version = ["py313"]
+extend-exclude = '''
+/(
+    migrations
+  | staticfiles
+  | vite/static
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+skip_glob = ["*/migrations/*", "staticfiles/*", "vite/static/*"]
+known_first_party = ["data_management", "vite", "kmm_web_backend"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+extend-exclude = ["migrations", "staticfiles", "vite/static"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "DJ"]
+ignore = ["E501"]

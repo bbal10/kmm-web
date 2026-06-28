@@ -2,5 +2,5 @@ from django.apps import AppConfig
 
 
 class ViteConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'vite'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "vite"

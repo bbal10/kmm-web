@@ -2,10 +2,12 @@
 Logging utilities for the data_management app.
 Provides centralized logging functions with security and audit considerations.
 """
+
 import logging
 from functools import wraps
+from typing import Dict, Optional
+
 from django.http import HttpRequest
-from typing import Optional, Dict
 
 
 def get_client_ip(request: HttpRequest) -> str:
@@ -18,11 +20,11 @@ def get_client_ip(request: HttpRequest) -> str:
     Returns:
         str: Client IP address
     """
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
     if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0].strip()
+        ip = x_forwarded_for.split(",")[0].strip()
     else:
-        ip = request.META.get('REMOTE_ADDR', 'Unknown')
+        ip = request.META.get("REMOTE_ADDR", "Unknown")
     return ip
 
 
@@ -37,11 +39,11 @@ def get_user_info(request: HttpRequest) -> Dict[str, str]:
         dict: User information including username and IP
     """
     return {
-        'username': request.user.username if request.user.is_authenticated else 'Anonymous',
-        'user_id': str(request.user.id) if request.user.is_authenticated else 'N/A',
-        'ip': get_client_ip(request),
-        'is_staff': str(request.user.is_staff) if request.user.is_authenticated else 'False',
-        'is_authenticated': str(request.user.is_authenticated)
+        "username": request.user.username if request.user.is_authenticated else "Anonymous",
+        "user_id": str(request.user.id) if request.user.is_authenticated else "N/A",
+        "ip": get_client_ip(request),
+        "is_staff": str(request.user.is_staff) if request.user.is_authenticated else "False",
+        "is_authenticated": str(request.user.is_authenticated),
     }
 
 
@@ -58,6 +60,7 @@ def log_user_action(logger_name: str = None):
             # view logic
             pass
     """
+
     def decorator(func):
         @wraps(func)
         def wrapper(request, *args, **kwargs):
@@ -92,11 +95,12 @@ def log_user_action(logger_name: str = None):
                     f"User: {user_info['username']}, "
                     f"IP: {user_info['ip']}, "
                     f"Error: {str(e)}",
-                    exc_info=True
+                    exc_info=True,
                 )
                 raise
 
         return wrapper
+
     return decorator
 
 
@@ -105,11 +109,17 @@ class SecurityLogger:
     Centralized security event logging.
     """
 
-    def __init__(self, logger_name: str = 'data_management.security'):
+    def __init__(self, logger_name: str = "data_management.security"):
         self.logger = logging.getLogger(logger_name)
 
-    def log_login_attempt(self, request: HttpRequest, username: str, success: bool,
-                         is_staff: bool = False, additional_info: str = ""):
+    def log_login_attempt(
+        self,
+        request: HttpRequest,
+        username: str,
+        success: bool,
+        is_staff: bool = False,
+        additional_info: str = "",
+    ):
         """
         Log login attempts with security context.
 
@@ -125,9 +135,7 @@ class SecurityLogger:
         status = "SUCCESS" if success else "FAILED"
 
         message = (
-            f"{login_type} login {status} - "
-            f"Username: {username}, "
-            f"IP: {user_info['ip']}"
+            f"{login_type} login {status} - " f"Username: {username}, " f"IP: {user_info['ip']}"
         )
 
         if additional_info:
@@ -145,8 +153,9 @@ class SecurityLogger:
             f"User logout SUCCESS - User: {user_info['username']}, IP: {user_info['ip']}"
         )
 
-    def log_access_attempt(self, request: HttpRequest, resource: str,
-                          granted: bool, reason: str = ""):
+    def log_access_attempt(
+        self, request: HttpRequest, resource: str, granted: bool, reason: str = ""
+    ):
         """
         Log access attempts to protected resources.
 
@@ -174,9 +183,15 @@ class SecurityLogger:
         else:
             self.logger.warning(message)
 
-    def log_data_modification(self, request: HttpRequest, action: str,
-                            model: str, record_id: Optional[str] = None,
-                            success: bool = True, error_msg: str = ""):
+    def log_data_modification(
+        self,
+        request: HttpRequest,
+        action: str,
+        model: str,
+        record_id: Optional[str] = None,
+        success: bool = True,
+        error_msg: str = "",
+    ):
         """
         Log data modification events.
 
@@ -215,19 +230,18 @@ class AuditLogger:
     Audit trail logging for compliance and monitoring.
     """
 
-    def __init__(self, logger_name: str = 'data_management.audit'):
+    def __init__(self, logger_name: str = "data_management.audit"):
         self.logger = logging.getLogger(logger_name)
 
-    def log_user_registration(self, request: HttpRequest, username: str,
-                            success: bool, errors: Dict = None):
+    def log_user_registration(
+        self, request: HttpRequest, username: str, success: bool, errors: Dict = None
+    ):
         """Log user registration events."""
         user_info = get_user_info(request)
         status = "SUCCESS" if success else "FAILED"
 
         message = (
-            f"User registration {status} - "
-            f"New username: {username}, "
-            f"IP: {user_info['ip']}"
+            f"User registration {status} - " f"New username: {username}, " f"IP: {user_info['ip']}"
         )
 
         if errors:
@@ -235,8 +249,9 @@ class AuditLogger:
 
         self.logger.info(message)
 
-    def log_profile_update(self, request: HttpRequest, updated_fields: list,
-                          success: bool, errors: Dict = None):
+    def log_profile_update(
+        self, request: HttpRequest, updated_fields: list, success: bool, errors: Dict = None
+    ):
         """Log profile update events."""
         user_info = get_user_info(request)
         status = "SUCCESS" if success else "FAILED"
@@ -252,31 +267,6 @@ class AuditLogger:
             message += f", Errors: {errors}"
 
         self.logger.info(message)
-
-
-class ColorFormatter(logging.Formatter):
-    """ANSI color log formatter for console output."""
-    COLORS = {
-        'DEBUG': '\033[37m',      # White
-        'INFO': '\033[36m',       # Cyan
-        'WARNING': '\033[33m',    # Yellow
-        'ERROR': '\033[31m',      # Red
-        'CRITICAL': '\033[41m',   # Red background
-    }
-    RESET = '\033[0m'
-
-    def format(self, record: logging.LogRecord) -> str:
-        levelname = record.levelname
-        color = self.COLORS.get(levelname, '')
-        # Preserve original message formatting using parent
-        original_format = self._style._fmt
-        # Temporarily inject color codes around levelname and message
-        if color:
-            self._style._fmt = original_format.replace('{levelname}', f'{color}{{levelname}}{self.RESET}')
-        try:
-            return super().format(record)
-        finally:
-            self._style._fmt = original_format
 
 
 # Create singleton instances for easy import

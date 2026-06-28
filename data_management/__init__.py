@@ -1,1 +1,1 @@
-default_app_config = 'data_management.apps.DataManagementConfig'
+default_app_config = "data_management.apps.DataManagementConfig"

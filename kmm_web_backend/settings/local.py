@@ -22,12 +22,12 @@ from .base import *
 DEBUG = True
 
 # Development hosts - allow semua untuk kemudahan development
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '*']
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0", "*"]
 
 # Development SECRET_KEY - aman untuk development saja
 SECRET_KEY = os.environ.get(
-    'SECRET_KEY',
-    'dev-secret-key-that-is-long-enough-and-secure-for-development-use-only-change-in-production-50-chars-minimum'
+    "SECRET_KEY",
+    "dev-secret-key-that-is-long-enough-and-secure-for-development-use-only-change-in-production-50-chars-minimum",
 )
 
 # ============================================================================
@@ -36,23 +36,23 @@ SECRET_KEY = os.environ.get(
 
 # Tambahkan development-only apps
 INSTALLED_APPS += [
-    'django_browser_reload',  # Auto-reload browser saat code berubah
+    "django_browser_reload",  # Auto-reload browser saat code berubah
 ]
 
 # Tambahkan development middleware
-MIDDLEWARE.append('django_browser_reload.middleware.BrowserReloadMiddleware')
+MIDDLEWARE.append("django_browser_reload.middleware.BrowserReloadMiddleware")
 
 # ============================================================================
 # DATABASE - PostgreSQL (jika DATABASE_URL ada) atau SQLite (default)
 # ============================================================================
 
 # Cek apakah DATABASE_URL ada di environment (misal dari Docker Compose)
-database_url = os.environ.get('DATABASE_URL')
+database_url = os.environ.get("DATABASE_URL")
 
 if database_url:
     # Gunakan PostgreSQL via DATABASE_URL (dari Docker Compose)
     DATABASES = {
-        'default': dj_database_url.parse(
+        "default": dj_database_url.parse(
             database_url,
             conn_max_age=600,
             conn_health_checks=True,
@@ -61,9 +61,9 @@ if database_url:
 else:
     # Fallback ke SQLite untuk development tanpa Docker
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
         }
     }
 
@@ -72,8 +72,8 @@ else:
 # ============================================================================
 
 CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    "default": {
+        "BACKEND": "django.core.cache.backends.dummy.DummyCache",
     }
 }
 
@@ -81,7 +81,7 @@ CACHES = {
 # EMAIL - Console backend (print ke terminal)
 # ============================================================================
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # ============================================================================
 # SECURITY - Relaxed untuk development
@@ -97,23 +97,28 @@ SECURE_HSTS_SECONDS = 0
 # STATIC FILES - Simple storage untuk development
 # ============================================================================
 
-STORAGES["default"]["BACKEND"] = "django.core.files.storage.FileSystemStorage"
-STORAGES["staticfiles"]["BACKEND"] = "django.contrib.staticfiles.storage.StaticFilesStorage"
+# Hanya override ke storage lokal bila R2 TIDAK aktif. Bila USE_R2=True dengan
+# kredensial lengkap, biarkan konfigurasi R2 dari base.storage tetap dipakai.
+if not R2_ENABLED:
+    STORAGES["default"]["BACKEND"] = "django.core.files.storage.FileSystemStorage"
+    STORAGES["staticfiles"][
+        "BACKEND"
+    ] = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
 # ============================================================================
 # LOGGING - Verbose untuk development
 # ============================================================================
 
 # Console logging dengan level DEBUG untuk lihat semua detail
-LOGGING['handlers']['console']['formatter'] = 'verbose'
-LOGGING['handlers']['console']['level'] = 'DEBUG'
-LOGGING['root']['level'] = 'DEBUG'
+LOGGING["handlers"]["console"]["formatter"] = "verbose"
+LOGGING["handlers"]["console"]["level"] = "DEBUG"
+LOGGING["root"]["level"] = "DEBUG"
 
 # ============================================================================
 # VITE - Hot reload via Vite dev server (respect env var, default False)
 # ============================================================================
 
-VITE_DEV_MODE = os.environ.get('VITE_DEV_MODE', 'False').lower() in ('true', '1', 'yes')
+VITE_DEV_MODE = os.environ.get("VITE_DEV_MODE", "False").lower() in ("true", "1", "yes")
 
 # ============================================================================
 # DJANGO DEBUG TOOLBAR (Optional)

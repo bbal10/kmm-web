@@ -1,12 +1,22 @@
-FROM python:3.11.14
+FROM python:3.13-slim
 
 # set work directory
 WORKDIR /app
 
-# Install Node.js for Vite build
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
-apt-get install -y nodejs && \
-rm -rf /var/lib/apt/lists/*
+# Install system dependencies:
+# - curl/ca-certificates: needed to fetch the NodeSource setup script
+# - gnupg: NodeSource apt key
+# - Pillow runtime libs (libjpeg, zlib) for ImageField/photo handling
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        curl \
+        ca-certificates \
+        gnupg \
+        libjpeg62-turbo \
+        zlib1g \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/

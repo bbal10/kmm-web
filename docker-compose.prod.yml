@@ -6,7 +6,9 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-kmm_web_db}
       POSTGRES_USER: ${POSTGRES_USER:-kmm_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      # Wajib diset di .env — gagal cepat dengan pesan jelas bila kosong,
+      # supaya tidak diam-diam memakai password kosong.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}
     # Expose only for debugging / direct DB access from host (remove in high-security setups)
     ports:
       - "5432:5432"
@@ -38,7 +40,7 @@ services:
     env_file:
       - ./.env
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-kmm_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-kmm_web_db}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-kmm_user}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env}@postgres:5432/${POSTGRES_DB:-kmm_web_db}
       REDIS_URL: redis://redis:6379/0
       DJANGO_SETTINGS_MODULE: "kmm_web_backend.settings.production"
       VITE_DEV_MODE: "False"
@@ -51,6 +53,17 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    healthcheck:
+      # Liveness endpoint from data_management.health_checks (no DB dependency)
+      test:
+        [
+          "CMD-SHELL",
+          "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/alive/', timeout=5).status==200 else 1)\"",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
     restart: unless-stopped
 
   # Nginx reverse proxy - serves on standard ports 80/443
@@ -68,7 +81,8 @@ services:
       - ./staticfiles:/app/staticfiles:ro
       - ./media:/app/media:ro
     depends_on:
-      - web
+      web:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:

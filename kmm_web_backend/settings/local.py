@@ -24,10 +24,12 @@ DEBUG = True
 # Development hosts - allow semua untuk kemudahan development
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0", "*"]
 
-# Development SECRET_KEY - aman untuk development saja
-SECRET_KEY = os.environ.get(
-    "SECRET_KEY",
-    "dev-secret-key-that-is-long-enough-and-secure-for-development-use-only-change-in-production-50-chars-minimum",
+# Development SECRET_KEY - aman untuk development saja.
+# Perlakukan SECRET_KEY kosong di .env sama seperti tidak diset, supaya
+# tetap jatuh ke default dev (mencegah "SECRET_KEY must not be empty").
+SECRET_KEY = (
+    os.environ.get("SECRET_KEY")
+    or "dev-secret-key-that-is-long-enough-and-secure-for-development-use-only-change-in-production-50-chars-minimum"
 )
 
 # ============================================================================

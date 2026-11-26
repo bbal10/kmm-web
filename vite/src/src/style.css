@@ -153,10 +153,14 @@ h1, h2, h3, h4, h5, h6 {
                 border-color var(--motion-duration-normal) var(--motion-ease-out);
   }
 
-  .block-card:hover {
-    border-color: var(--color-primary-200);
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+  /* Only on devices with real hover: on touch screens :hover sticks after a tap,
+     and the transform (with backdrop-blur) can stop the card's bottom from painting. */
+  @media (hover: hover) {
+    .block-card:hover {
+      border-color: var(--color-primary-200);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+    }
   }
 
   .block-card-primary {

@@ -4,10 +4,10 @@
 {% block wrapper %}
 <div class="min-h-screen flex items-center justify-center bg-bg p-4 relative overflow-hidden">
   <!-- Subtle vibrant background glow (Error mix) -->
-  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-error-light rounded-full blur-[100px] opacity-30 pointer-events-none"></div>
+  <div class="hidden sm:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-error-light rounded-full blur-[100px] opacity-30 pointer-events-none"></div>
   
   <div class="w-full max-w-md motion-fade-up relative z-10 text-center">
-    <div class="block-card p-8 sm:p-10 shadow-xl border-white/50 bg-white/80 backdrop-blur-xl">
+    <div class="block-card p-8 sm:p-10 shadow-xl border-white/50 bg-white sm:bg-white/80 sm:backdrop-blur-xl">
       <div class="w-24 h-24 bg-gradient-to-br from-error to-error-dark shadow-lg shadow-error/30 mx-auto flex items-center justify-center rounded-3xl mb-8 transform -rotate-6">
         <i class="fas fa-ghost text-4xl text-white"></i>
       </div>
